@@ -2,6 +2,7 @@
 // C-XORSAT on C-RRG
 #include <stdio.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include <math.h>
 #include <ctype.h>
 #include <string.h>
@@ -237,8 +238,15 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  char mcStoriesFile[80];
+  char mcStoriesFile[200] = "";
+     char *path = "file.txt";
+    char resolved_path[100];
 
+  /*  if (realpath(path, resolved_path) != NULL) {
+        printf("Il percorso assoluto di %s è %s\n", path, resolved_path);
+    } else {
+        perror("Errore durante la risoluzione del percorso");
+    }*/
   // questa inizializzazione funziona su LINUX
   /*
   FILE *devran = fopen("/dev/random","r");
@@ -280,19 +288,22 @@ int main(int argc, char *argv[])
     error("in H");
 
   sprintf(mcStoriesFile,
-          "../Data/Archive/QuenchingResults/McStories_N%d_Tp%s_T%f_h%f_S%d.txt",
+          "C:\\Users\\Riccardo\\Desktop\\Codici\\QuenchingRRG\\Data\\Archive\\QuenchingResults\\McStories_N%d_Tp%s_T%f_h%f_S%d.txt",
           N, Tp_string, T, H, nSamples);
 
   FILE *out = fopen(mcStoriesFile, "w+");
 
   if (out == NULL)
   {
-    printf("Error in the creation of the file %s", mcStoriesFile);
+    printf("Error in the creation of the file %s\n\n", mcStoriesFile);
+    printf("%s\n",mcStoriesFile);
     exit(EXIT_FAILURE);
   }
 
-  printf("#Quenching  C = %i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
-         C, N, Tp_string, T, H, myrand);
+  printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
+         C, p, N, Tp_string, T, H, myrand);
+  fprintf(out,"#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
+         C, p, N, Tp_string, T, H, myrand);
   initRandom();
   allocateAll();
 
@@ -329,7 +340,7 @@ int main(int argc, char *argv[])
   rewind(out);
   char ch;
   FILE *target;
-  char target_file[200] = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun\\McStories.txt";
+  char target_file[200] = "C:\\Users\\Riccardo\\Desktop\\Codici\\QuenchingRRG\\Data\\LastRun\\McStories.txt";
 
   target = fopen(target_file, "w");
   if (target == NULL)

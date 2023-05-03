@@ -1,16 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import os
 
 t_max=9999
 n_stories=10
 averages = []
 
-path = path = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun"
-with open(path+ '\\McStories.txt', 'r') as file:
-    lines = file.readlines()
+path = os.path.abspath('..\\Data\\LastRun')
 
-data = np.genfromtxt(lines, delimiter=' ')
+#path = path = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun"
+with open(path+'\\McStories.txt', 'r') as f:
+    lines = f.readlines()  # Legge tutte le righe in una lista
+    dataLines = filter(lambda x: not x.startswith('#'), lines)
+    paramsLines =  filter(lambda x: x.startswith('#'), lines)
+
+data = np.genfromtxt(dataLines, delimiter=' ')
 plt.figure(0)
 
 for i in range (n_stories):
@@ -32,4 +37,6 @@ plt.savefig(path+"\\EnergyHystogram.png")
 plt.show()
 
 with open(path+'\\Results.txt', 'w') as f:
+    for line in paramsLines:
+        f.write(line)
     f.write('The average final energy is {}.'.format(np.average(averages)))

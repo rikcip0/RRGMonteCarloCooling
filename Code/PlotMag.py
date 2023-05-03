@@ -1,17 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import os
 
 n_stories=10
 n = int(sys.argv[1])
 print(n+1)
-path = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun"
+path = os.path.abspath('..\\Data\\LastRun')
 
 with open(path + '\\McStories.txt', 'r') as file:
-    lines = file.readlines()
+    dataLines = file.readlines().filter(lambda x: not x.startswith('#'))
 
+with open(path + '\\McStories.txt', 'r') as file:
+    paramsLines = file.readlines().filter(lambda x: x.startswith('#'))
 
-data = np.genfromtxt(lines, delimiter=' ')
+data = np.genfromtxt(dataLines, delimiter=' ')
 times = data[:, 2]
 energies = data[:, 1]
 magnetizations = data[:, 0]
@@ -21,6 +24,6 @@ plt.plot(times, magnetizations, label='magnetization')
 #plt.xscale('log')
 plt.legend()
 plt.title('Titolo del {} grafico' .format(n))
-plt.savefig(path+"\\Ciao.png")
+plt.savefig(path+"\\Magnetizations.png")
 
 plt.show()

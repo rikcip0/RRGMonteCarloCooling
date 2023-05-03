@@ -8,27 +8,26 @@ from email import encoders
 
 
 # Aggiunta dell'allegato
-FOLDER_PATH = 'C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun'
+FOLDER_PATH = os.path.abspath('..\\Data\\LastRun')
 
 # Parametri per l'invio dell'email
-mittente = 'riccardo.sender@gmail.com'
-destinatario = 'cipolloni.1714653@studenti.uniroma1.it'
+sender = 'riccardo.sender@gmail.com'
+receiver = 'cipolloni.1714653@studenti.uniroma1.it'
 password = 'jdbhfoxtsogsptql'
-oggetto = 'Quenching results!'
-testo = 'The results for your quenching simulation with parameters'
-testo += '100\n\n'
+object = 'Quenching results!'
+body = 'The results for your simulation with inputs\n'
 
 with open(FOLDER_PATH+'\\Results.txt', 'r') as file:
-    testo+= file.read()
+    body+= file.read()
 
 # Creazione del messaggio email
 msg = MIMEMultipart()
-msg['From'] = mittente
-msg['To'] = destinatario
-msg['Subject'] = oggetto
+msg['From'] = sender
+msg['To'] = receiver
+msg['Subject'] = object
 
-# Aggiunta del testo dell'email
-msg.attach(MIMEText(testo))
+# Aggiunta del body dell'email
+msg.attach(MIMEText(body))
 
 
 # Ottieni la lista di tutti i file nella cartella
@@ -48,11 +47,11 @@ for file in file_list:
 # Connessione al server SMTP e invio dell'email
 with smtplib.SMTP('smtp.gmail.com', 587) as server:
     server.starttls()
-    server.login(mittente, password)
-    server.sendmail(mittente, destinatario, msg.as_string())
+    server.login(sender, password)
+    server.sendmail(sender, receiver, msg.as_string())
     server.quit()
 
-testo = 'Inviata email con allegati:\n'
+body = 'Inviata email con allegati:\n'
 for filr in file_list:
-    testo += (file +'\n')
-print(testo)
+    body += (file +'\n')
+print(body)
