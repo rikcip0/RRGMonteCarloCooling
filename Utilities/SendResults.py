@@ -11,9 +11,9 @@ from email import encoders
 FOLDER_PATH = 'C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun'
 
 # Parametri per l'invio dell'email
-mittente = 'riccardo.cipolloni@gmail.com'
-destinatario = 'riccardo.cipolloni@gmail.com'
-password = 'draeuqsahbvwdgrf'
+mittente = 'riccardo.sender@gmail.com'
+destinatario = 'cipolloni.1714653@studenti.uniroma1.it'
+password = 'jdbhfoxtsogsptql'
 oggetto = 'Quenching results!'
 testo = 'The results for your quenching simulation with parameters'
 testo += '100\n\n'
@@ -52,4 +52,7 @@ with smtplib.SMTP('smtp.gmail.com', 587) as server:
     server.sendmail(mittente, destinatario, msg.as_string())
     server.quit()
 
-print('\nEmail inviata con successo!\n')
+testo = 'Inviata email con allegati:\n'
+for filr in file_list:
+    testo += (file +'\n')
+print(testo)

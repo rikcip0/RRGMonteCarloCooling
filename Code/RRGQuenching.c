@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
     error("in H");
 
   sprintf(mcStoriesFile,
-          "../Data/QuenchingResults/McStories_N%d_Tp%s_T%f_h%f_S%d.txt",
+          "../Data/Archive/QuenchingResults/McStories_N%d_Tp%s_T%f_h%f_S%d.txt",
           N, Tp_string, T, H, nSamples);
 
   FILE *out = fopen(mcStoriesFile, "w+");
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
   rewind(out);
   char ch;
   FILE *target;
-  char target_file[200] = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Annealing\\Data\\LastRun\\McStories.txt";
+  char target_file[200] = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun\\McStories.txt";
 
   target = fopen(target_file, "w");
   if (target == NULL)
