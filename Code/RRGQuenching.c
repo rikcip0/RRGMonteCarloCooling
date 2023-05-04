@@ -10,12 +10,13 @@
 #define C 3
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration
-#define t_end 10e3        // numero di MC steps
+#define t_end 10e5        // numero di MC steps
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
 #define FRANDOM (FNORM * RANDOM)
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
+#define t_meas 10e5
 
 #ifdef _WIN32
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
@@ -241,7 +242,7 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  const char *dataFolderFullPath=  realpath("..\\Data", NULL);
+  const char *dataFolderFullPath= "..\\Data";    //realpath("..\\Data", NULL);  to be implemented, when using absolute paths
   char path[200] = "";
   char filename[200] ="";
 

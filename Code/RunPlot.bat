@@ -10,7 +10,7 @@ make compile
 
 cool %N% %Tp% %T% %nSample% %h%
 
-PlotEnergy.py
+PlotEnergy.py %N% %Tp% %T% %nSample% %h% 10000
 PlotMag.py
 
 ..\Utilities\SendResults.py
