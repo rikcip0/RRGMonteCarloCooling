@@ -1,7 +1,8 @@
 # target: dependencies... se target è stato fatto dopo l'ultima modifica di dependencies non lo rifa.
 compile:
 	gcc RRGQuenching.c -o cool.exe
-	echo "Program compiled in cool"
+	@echo Program compiled in cool
+	@echo .
 
 run:
 	make compile

@@ -52,6 +52,6 @@ with smtplib.SMTP('smtp.gmail.com', 587) as server:
     server.quit()
 
 body = 'Inviata email con allegati:\n'
-for filr in file_list:
+for file in file_list:
     body += (file +'\n')
 print(body)

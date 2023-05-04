@@ -4,12 +4,11 @@ import sys
 import os
 
 t_max=9999
-n_stories=10
+n_stories=60
 averages = []
 
-path = os.path.abspath('..\\Data\\LastRun')
-
-#path = path = "C:\\Users\\Riccardo\\Desktop\\Codici\\PhD\\diluted_pSpin\\Quenching\\Data\\LastRun"
+path = os.path.abspath('Data\LastRun')
+print(path+'\\McStories.txt')
 with open(path+'\\McStories.txt', 'r') as f:
     lines = f.readlines()  # Legge tutte le righe in una lista
     dataLines = filter(lambda x: not x.startswith('#'), lines)

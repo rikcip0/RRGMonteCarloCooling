@@ -2,7 +2,6 @@
 // C-XORSAT on C-RRG
 #include <stdio.h>
 #include <stdlib.h>
-#include <libgen.h>
 #include <math.h>
 #include <ctype.h>
 #include <string.h>
@@ -17,6 +16,10 @@
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
 #define FRANDOM (FNORM * RANDOM)
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
+
+#ifdef _WIN32
+#define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
+#endif
 
 /* variabili globali per il generatore random */
 unsigned int myrand, _ira[256];
@@ -238,15 +241,18 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  char mcStoriesFile[200] = "";
-     char *path = "file.txt";
-    char resolved_path[100];
+  const char *dataFolderFullPath=  realpath("..\\Data", NULL);
+  char path[200] = "";
+  char filename[200] ="";
 
-  /*  if (realpath(path, resolved_path) != NULL) {
-        printf("Il percorso assoluto di %s è %s\n", path, resolved_path);
-    } else {
-        perror("Errore durante la risoluzione del percorso");
-    }*/
+  dataFolderFullPath ;
+  if (dataFolderFullPath == NULL)
+  {
+    printf("Error in the search of the Data path.\n");
+    return EXIT_FAILURE;
+  }
+  
+
   // questa inizializzazione funziona su LINUX
   /*
   FILE *devran = fopen("/dev/random","r");
@@ -287,23 +293,23 @@ int main(int argc, char *argv[])
   if (H < 0.0 || H > 1.0)
     error("in H");
 
-  sprintf(mcStoriesFile,
-          "C:\\Users\\Riccardo\\Desktop\\Codici\\QuenchingRRG\\Data\\Archive\\QuenchingResults\\McStories_N%d_Tp%s_T%f_h%f_S%d.txt",
-          N, Tp_string, T, H, nSamples);
+  sprintf(filename, "\\Archive\\QuenchingResults\\McStories_N%d_Tp%s_T%f_h%f_S%d.txt", N, Tp_string, T, H, nSamples);
+  strcat(path, dataFolderFullPath); 
+  strcat(path, filename);
 
-  FILE *out = fopen(mcStoriesFile, "w+");
+  FILE *out = fopen(path, "w+");
 
   if (out == NULL)
   {
-    printf("Error in the creation of the file %s\n\n", mcStoriesFile);
-    printf("%s\n",mcStoriesFile);
+    printf("Error in the creation of the file %s\n\n", path);
+    printf("%s\n", path);
     exit(EXIT_FAILURE);
   }
 
   printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          C, p, N, Tp_string, T, H, myrand);
-  fprintf(out,"#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
-         C, p, N, Tp_string, T, H, myrand);
+  fprintf(out, "#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
+          C, p, N, Tp_string, T, H, myrand);
   initRandom();
   allocateAll();
 
@@ -340,9 +346,14 @@ int main(int argc, char *argv[])
   rewind(out);
   char ch;
   FILE *target;
-  char target_file[200] = "C:\\Users\\Riccardo\\Desktop\\Codici\\QuenchingRRG\\Data\\LastRun\\McStories.txt";
 
-  target = fopen(target_file, "w");
+  strcpy(path, "");
+  strcpy(filename, "");
+  sprintf(filename, "\\LastRun\\McStories.txt");
+  strcat(path, dataFolderFullPath);
+  strcat(path, filename);
+  printf("%s",path);
+  target = fopen(path, "w");
   if (target == NULL)
   {
     fclose(out);
