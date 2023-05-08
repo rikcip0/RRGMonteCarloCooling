@@ -350,6 +350,7 @@ int main(int argc, char *argv[])
         fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
     }
     fclose(out);
+    is++;
   }while(is< nSamples);
 
   return EXIT_SUCCESS;
