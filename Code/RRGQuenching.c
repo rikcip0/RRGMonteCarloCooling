@@ -319,6 +319,7 @@ int main(int argc, char *argv[])
       is = nSamples;      //otherwise, it loops to generate nSamples story
     #endif
 
+    initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);

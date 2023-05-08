@@ -48,7 +48,7 @@ plt.plot(time[1,20:], energy[:,20:].mean(0))
 plt.figure(1)
 plt.plot(time[1,20:], magnetization[:,20:].mean(0))
 
-for i in range(0,99, 1):
+for i in range(0,39, 1):
     plt.figure('mag')
     plt.plot(time[i,20:], magnetization[i,20:])
     plt.figure('ene')
