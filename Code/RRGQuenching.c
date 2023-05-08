@@ -10,7 +10,8 @@
 #define C 3
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration
-#define t_end 10e5        // numero di MC steps
+#define t_end 10e4        // numero di MC steps
+#define t_meas 20         // number of mc sweep to take a measure
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
@@ -27,7 +28,7 @@ unsigned int myrand, _ira[256];
 unsigned char _ip, _ip1, _ip2, _ip3;
 
 int N, numPosJ, *graph, *deg, *J, **neigh, *s;
-int ener0, mag, nextMeasMag;
+int ener0, mag;
 double prob[C + 1];
 
 unsigned int randForInit(void)
@@ -210,7 +211,7 @@ int ener(void)
   return -res;
 }
 
-void oneMCStep(long long int t, FILE *out, int is)
+void oneMCStep(long long int t)
 {
   int i, j, k, ind, prod, sum;
 
@@ -233,7 +234,6 @@ void oneMCStep(long long int t, FILE *out, int is)
       mag += 2 * s[i];
     }
   }
-  fprintf(out, "%i %i %lli %d\n", mag, ener() - ener0, t, is);
 }
 
 int main(int argc, char *argv[])
@@ -242,17 +242,16 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  const char *dataFolderFullPath= "..\\Data";    //realpath("..\\Data", NULL);  to be implemented, when using absolute paths
+  const char *dataFolderFullPath = realpath("..\\Data", NULL);
   char path[200] = "";
-  char filename[200] ="";
+  char filename[200] = "";
 
-  dataFolderFullPath ;
+  dataFolderFullPath;
   if (dataFolderFullPath == NULL)
   {
     printf("Error in the search of the Data path.\n");
     return EXIT_FAILURE;
   }
-  
 
   // questa inizializzazione funziona su LINUX
   /*
@@ -294,23 +293,9 @@ int main(int argc, char *argv[])
   if (H < 0.0 || H > 1.0)
     error("in H");
 
-  sprintf(filename, "\\Archive\\QuenchingResults\\McStories_N%d_Tp%s_T%f_h%f_S%d.txt", N, Tp_string, T, H, nSamples);
-  strcat(path, dataFolderFullPath); 
-  strcat(path, filename);
-
-  FILE *out = fopen(path, "w+");
-
-  if (out == NULL)
-  {
-    printf("Error in the creation of the file %s\n\n", path);
-    printf("%s\n", path);
-    exit(EXIT_FAILURE);
-  }
-
   printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          C, p, N, Tp_string, T, H, myrand);
-  fprintf(out, "#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
-          C, p, N, Tp_string, T, H, myrand);
+
   initRandom();
   allocateAll();
 
@@ -326,46 +311,67 @@ int main(int argc, char *argv[])
   initProb(1. / T, H);
   for (is = 0; is < nSamples * nDisorderCopies; is++)
   {
+
     if (!(is % nDisorderCopies))
     {
       initRRGraph();
     }
+
+    strcpy(path, "");
+    sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
+    strcat(path, dataFolderFullPath);
+    strcat(path, filename);
+    FILE *out = fopen(path, "w+");
+
+    if (out == NULL)
+    {
+      printf("Error in the creation of the file %s\n\n", path);
+      printf("%s\n", path);
+      exit(EXIT_FAILURE);
+    }
+
+    fprintf(out, "#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n",C, p, N, Tp_string, T, H, is, myrand);
+
+    mag = 0;
     for (i = 0; i < N; i++)
     {
-      s[i] = (int)(FRANDOM > 0.5 ? 1 : 0); // different wrt the planted case, where all s[i] are 1
+      s[i] = (int)(FRANDOM > 0.5 ? 1 : -1); // different wrt the planted case, where all s[i] are 1
+      mag += s[i];
     }
-    mag = N;
     ener0 = ener();
-    nextMeasMag = mag - 2;
-    for (t = 1; t < t_end; t++)
+
+    fprintf(out, "%i %i 0\n", mag, ener() - ener0);
+    for (t = 1; t <= t_end; t++)
     {
-      oneMCStep(t, out, is);
+      oneMCStep(t);
+      if (!(t % t_meas))
+        fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
     }
-  }
-
-  // Da qui in poi faccio solo una copia dei dati delle simulazioni
-  rewind(out);
-  char ch;
-  FILE *target;
-
-  strcpy(path, "");
-  strcpy(filename, "");
-  sprintf(filename, "\\LastRun\\McStories.txt");
-  strcat(path, dataFolderFullPath);
-  strcat(path, filename);
-  printf("%s",path);
-  target = fopen(path, "w");
-  if (target == NULL)
-  {
     fclose(out);
-    printf("Press any key to exit...");
-    exit(EXIT_FAILURE);
   }
-  while ((ch = fgetc(out)) != EOF)
-    fputc(ch, target);
-  printf("\nMonte Carlo stories file copied successfully.\n");
-  fclose(target);
-  fclose(out);
+  /*
+    // Da qui in poi faccio solo una copia dei dati delle simulazioni
+    rewind(out);
+    char ch;
+    FILE *target;
 
+    strcpy(path, "");
+    strcpy(filename, "");
+    sprintf(filename, "\\LastRun\\McStories.txt");
+    strcat(path, dataFolderFullPath);
+    strcat(path, filename);
+    printf("%s", path);
+    target = fopen(path, "w");
+    if (target == NULL)
+    {
+      fclose(out);
+      printf("Press any key to exit...");
+      exit(EXIT_FAILURE);
+    }
+    while ((ch = fgetc(out)) != EOF)
+      fputc(ch, target);
+    printf("\nMonte Carlo stories file copied successfully.\n");
+    fclose(target);
+  */
   return EXIT_SUCCESS;
 }
