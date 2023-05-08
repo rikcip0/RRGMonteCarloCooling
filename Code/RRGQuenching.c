@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
   }
   else if (strcmp(argv[2], "inf") == 0)
   {
-    Tp = -1;
+    Tp = -1;             //TO BE DONE
   }
   else
   {
@@ -311,14 +311,13 @@ int main(int argc, char *argv[])
 
   initProb(1. / T, H);
 
-
-  for (is=0; is < nSamples; is++)
-  {
-
     #ifdef SINGLESTORY    //if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
       is = nSamples;      //otherwise, it loops to generate nSamples story
+      #else
+      is=0;
     #endif
 
+  do{
     initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
@@ -351,7 +350,7 @@ int main(int argc, char *argv[])
         fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
     }
     fclose(out);
-  }
+  }while(is< nSamples);
 
   return EXIT_SUCCESS;
 }
