@@ -7,11 +7,11 @@
 #include <string.h>
 #include <time.h> //added by me (RC) to initialize the generator
 
-#define C 3
+#define C 4
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
 #define t_end 1e5        // number of Monte Carlo sweeps
-#define t_meas 20         // number of MC Sweep between measures
+#define t_meas 1         // number of MC Sweep between measures
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
@@ -117,9 +117,9 @@ void initRRGraph(void)
   int i, j, k, changes, tmp, site, *pointer;
 
   for (i = 0; i < N; i++)
-    for (j = 0; j < C; j++)
-      graph[C * i + j] = i;   // We'll have, for c=3, something like = [0 0 0 1 1 1 2 2 2 ... N N N ]
-  for (i = 0; i < C * N; i++) // running over all the array and doing casual switches (one for each position)
+    for (j = 0; j < p; j++)
+      graph[p * i + j] = i;   // We'll have, for p=3, something like = [0 0 0 1 1 1 2 2 2 ... N N N ]
+  for (i = 0; i < p * N; i++) // running over all the array and doing casual switches (one for each position)
   {
     j = (int)(FRANDOM * C * N);
     tmp = graph[j];
@@ -131,10 +131,10 @@ void initRRGraph(void)
     changes = 0;
     for (i = 0; i < N; i++)
     {
-      pointer = whereEqual(graph + i * C); // checking whether there is an interaction with a spin appearing more than once
+      pointer = whereEqual(graph + i * p); // checking whether there is an interaction with a spin appearing more than once
       if (pointer != NULL)                 // in the affirmative case, the first occurrence is switched with a random entry
       {
-        j = (int)(FRANDOM * C * N);
+        j = (int)(FRANDOM * p * N);
         tmp = graph[j];
         graph[j] = *pointer;
         *pointer = tmp;
@@ -146,31 +146,34 @@ void initRRGraph(void)
   for (i = 0; i < N; i++)
     deg[i] = 0;
 
+  printf("ciao2\n");
   for (i = 0; i < numPosJ; i++) // associate first numPosJ c-plets of graph to interactions with J=1
   {
-    for (j = 0; j < C; j++) // For each site in the c-plet
+    for (j = 0; j < p; j++) // For each site in the p-plet
     {
-      site = graph[i * C + j];
-      for (k = 0; k < C; k++)
-        neigh[site][C * deg[site] + k] = graph[i * C + k]; // For each site, in the array neigh[site] we ll have interaction c-plets to which it participates
-      J[C * site + deg[site]] = 1;                         // in the C s + d position of the array I ll have the coupling of the d interaction of the s spin
+      site = graph[i * p + j];
+      for (k = 0; k < p; k++)
+        neigh[site][p * deg[site] + k] = graph[i * p + k]; // For each site, in the array neigh[site] we ll have interaction c-plets to which it participates
       deg[site]++;
+      J[C * site + deg[site]] = 1;                         // in the C s + d position of the array I ll have the coupling of the d interaction of the s spin
     }
   }
   for (; i < N; i++)
   {
-    for (j = 0; j < C; j++)
+    for (j = 0; j < p; j++)
     {
-      site = graph[i * C + j];
-      for (k = 0; k < C; k++)
-        neigh[site][C * deg[site] + k] = graph[i * C + k];
+      site = graph[i * p + j];
+      for (k = 0; k < p; k++)
+        neigh[site][p * deg[site] + k] = graph[i * p + k];
       J[C * site + deg[site]] = -1;
       deg[site]++;
     }
   }
   for (i = 0; i < N; i++)
+  printf("grado di %d  = %d\n\n", i, deg[i]);
     if (deg[i] != C)
-      error("nei gradi");
+      printf("at %d\n",i);
+      error("nei gradi at");
 }
 
 void initProb(double beta, double field)
@@ -296,7 +299,7 @@ int main(int argc, char *argv[])
 
   printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          C, p, N, Tp_string, T, H, myrand);
-
+printf("ciao1");
   initRandom();
   allocateAll();
 
@@ -312,6 +315,7 @@ int main(int argc, char *argv[])
   initProb(1. / T, H);
 
 
+
   for (is=0; is < nSamples; is++)
   {
 
@@ -319,6 +323,7 @@ int main(int argc, char *argv[])
       is = nSamples;      //otherwise, it loops to generate nSamples story
     #endif
 
+    initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);
