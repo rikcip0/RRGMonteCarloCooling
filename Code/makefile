@@ -1,21 +1,24 @@
 # target: dependencies... se target è stato fatto dopo l'ultima modifica di dependencies non lo rifa.
-compile:
-	gcc RRGQuenching.c -o cool.exe
-	@echo Program compiled in cool
+compileMultiple:
+	gcc RRGQuenching.c -o multipleCool.exe
+	@echo Program compiled in multipleCool
 	@echo .
 
-run:
-	make compile
-	Ann 100 0. 0.5 30 0.8
-	gnuplot -e "p 'McStories.txt' u 1:2:4 palette" -persist
-	pause
+compileSingle:
+	gcc -DSINGLESTORY RRGQuenching.c -o singleCool.exe
+	@echo Program compiled in singleCool
+	@echo .
 
-run2:
-	make compile
-	Ann 200 0. 0.5 30 0.8
-	gnuplot -e "p 'McStories.txt' u 1:2:4 palette" -persist
-	pause
+cleanAll: 
+	del singleCool.exe
+	del multipleCool.exe
+	@echo singleCool executable deleted
+	@echo multipleCool executable deleted
 
-clean: 
-	del cool.exe
-	pause
+cleanSingle: 
+	del singleCool.exe
+	@echo singleCool executable deleted
+
+cleanMultiple: 
+	del multipleCool.exe
+	@echo multipleCool executable deleted

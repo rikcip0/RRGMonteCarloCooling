@@ -5,25 +5,26 @@
 #include <math.h>
 #include <ctype.h>
 #include <string.h>
-#include <time.h> //L'ho aggiunto io (RC) per inizializzare il generatore
+#include <time.h> //added by me (RC) to initialize the generator
 
 #define C 3
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
-#define nDisorderCopies 1 // number of instances for each disorder configuration
-#define t_end 10e4        // numero di MC steps
-#define t_meas 20         // number of mc sweep to take a measure
+#define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
+#define t_end 1e5        // number of Monte Carlo sweeps
+#define t_meas 20         // number of MC Sweep between measures
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
 #define FRANDOM (FNORM * RANDOM)
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
-#define t_meas 10e5
 
 #ifdef _WIN32
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
 #endif
 
-/* variabili globali per il generatore random */
+
+
+/* global vars for random generator */
 unsigned int myrand, _ira[256];
 unsigned char _ip, _ip1, _ip2, _ip3;
 
@@ -117,21 +118,21 @@ void initRRGraph(void)
 
   for (i = 0; i < N; i++)
     for (j = 0; j < C; j++)
-      graph[C * i + j] = i;   // avrò (per c=3) graph = [0 0 0 1 1 1 2 2 2 ... N N N ]
-  for (i = 0; i < C * N; i++) // scorro tutto l'array e faccio switch casuali (uno per ogni posizione)
+      graph[C * i + j] = i;   // We'll have, for c=3, something like = [0 0 0 1 1 1 2 2 2 ... N N N ]
+  for (i = 0; i < C * N; i++) // running over all the array and doing casual switches (one for each position)
   {
     j = (int)(FRANDOM * C * N);
     tmp = graph[j];
     graph[j] = graph[i];
     graph[i] = tmp;
-  } // alla fine avrò tipo [3 4 5  1 4 6  3 3 5 ...]
+  } // at the end we'll have smth like [3 4 5  1 4 6  3 3 5 ...]
   do
   {
     changes = 0;
     for (i = 0; i < N; i++)
     {
-      pointer = whereEqual(graph + i * C); // vedo se ho mai un'interazione in cui appare almeno 2 volte la stessa variabile
-      if (pointer != NULL)                 // e in caso prendo la prima occorrenza della variabile e la switcho con una in un'entrata random
+      pointer = whereEqual(graph + i * C); // checking whether there is an interaction with a spin appearing more than once
+      if (pointer != NULL)                 // in the affirmative case, the first occurrence is switched with a random entry
       {
         j = (int)(FRANDOM * C * N);
         tmp = graph[j];
@@ -140,19 +141,19 @@ void initRRGraph(void)
         changes++;
       }
     }
-  } while (changes); // continuo finchè non serve più fare switch (cioè nessuna variabile interagisce con se stessa)
+  } while (changes); // keep doing it until no more switches are needed (i.e., no variable is self-interacting)
 
   for (i = 0; i < N; i++)
     deg[i] = 0;
 
-  for (i = 0; i < numPosJ; i++) // associo le prime numPosJ c-plette di graph alle interazioni con J=1
+  for (i = 0; i < numPosJ; i++) // associate first numPosJ c-plets of graph to interactions with J=1
   {
-    for (j = 0; j < C; j++) // Per ogni sito nella c-pletta
+    for (j = 0; j < C; j++) // For each site in the c-plet
     {
       site = graph[i * C + j];
       for (k = 0; k < C; k++)
-        neigh[site][C * deg[site] + k] = graph[i * C + k]; // per ogni site, nell'array neigh[site] avrò le c-plette di interazione cui partecipa
-      J[C * site + deg[site]] = 1;                         // nella posizione C s + d dell'array metto l'accoppiamento della d-esima interazione dello spin s
+        neigh[site][C * deg[site] + k] = graph[i * C + k]; // For each site, in the array neigh[site] we ll have interaction c-plets to which it participates
+      J[C * site + deg[site]] = 1;                         // in the C s + d position of the array I ll have the coupling of the d interaction of the s spin
       deg[site]++;
     }
   }
@@ -253,7 +254,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  // questa inizializzazione funziona su LINUX
+  // this initializations works on Linux. I (RC) am working on Windows
   /*
   FILE *devran = fopen("/dev/random","r");
   //FILE *devran = fopen("/dev/urandom","r"); // lower quality
@@ -261,7 +262,7 @@ int main(int argc, char *argv[])
   fclose(devran);
     */
 
-  myrand = time(NULL); // mia inizializzazione, che ho Windows
+  myrand = time(NULL); // my (RC) initialization, for Windows
   if (argc != 6)
   {
     fprintf(stderr, "usage: %s <N> <Tp> <T> <nSamples> <h>\n", argv[0]);
@@ -309,13 +310,14 @@ int main(int argc, char *argv[])
   }
 
   initProb(1. / T, H);
-  for (is = 0; is < nSamples * nDisorderCopies; is++)
+
+
+  for (is=0; is < nSamples; is++)
   {
 
-    if (!(is % nDisorderCopies))
-    {
-      initRRGraph();
-    }
+    #ifdef SINGLESTORY    //if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
+      is = nSamples;      //otherwise, it loops to generate nSamples story
+    #endif
 
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
@@ -349,29 +351,6 @@ int main(int argc, char *argv[])
     }
     fclose(out);
   }
-  /*
-    // Da qui in poi faccio solo una copia dei dati delle simulazioni
-    rewind(out);
-    char ch;
-    FILE *target;
 
-    strcpy(path, "");
-    strcpy(filename, "");
-    sprintf(filename, "\\LastRun\\McStories.txt");
-    strcat(path, dataFolderFullPath);
-    strcat(path, filename);
-    printf("%s", path);
-    target = fopen(path, "w");
-    if (target == NULL)
-    {
-      fclose(out);
-      printf("Press any key to exit...");
-      exit(EXIT_FAILURE);
-    }
-    while ((ch = fgetc(out)) != EOF)
-      fputc(ch, target);
-    printf("\nMonte Carlo stories file copied successfully.\n");
-    fclose(target);
-  */
   return EXIT_SUCCESS;
 }

@@ -6,15 +6,6 @@ import matplotlib.pyplot as plt
 # Define the path of the TXT files
 file_path = "../Data/ThisRun/*.txt"
 
-# Number of columns in the files (assuming all files have the same number of columns)
-num_columns = 3
-
-# List of custom column names
-column_names = ["magnetization", "energy", "time"]
-
-# Dictionary of arrays for the columns
-columns = {column_name: [] for column_name in column_names}
-
 magnetization =[]
 energy = []
 time = []
@@ -34,7 +25,7 @@ for nome_file in sorted(file_names):
     if matchStoryNumber:
         storyNumber = int(matchStoryNumber.group(1))  # Converte il numero da stringa a intero
     else:
-        raise ValueError("Impossibile trovare un numero preceduto da 'McStory_' nel nome del file.")
+        raise ValueError("No file starting with 'McStory_' found.")
 
     with open(nome_file, 'r') as file:
         # Leggi tutte le righe dal file
@@ -52,8 +43,26 @@ time = np.array(time)
 magnetization= np.array(magnetization)
 energy = np.array(energy)
 
-plt.plot(time[1,1:], energy[:,1:].mean(axis=0))
-plt.figure(2)
-plt.plot(time[1,1:], energy[:,1:].var(axis=0))
-plt.legend()
+plt.figure(0)
+plt.plot(time[1,20:], energy[:,20:].mean(0))
+plt.figure(1)
+plt.plot(time[1,20:], magnetization[:,20:].mean(0))
+
+for i in range(0,99, 1):
+    plt.figure('mag')
+    plt.plot(time[i,20:], magnetization[i,20:])
+    plt.figure('ene')
+    plt.plot(time[i,20:], energy[i,20:])
+
+magMin, magMax = np.min(magnetization[:,400:]), np.max(magnetization[:,400:])
+eneMin, eneMax = np.min(energy[:,400:]), np.max(energy[:,400:])
+
+for i in range(0,9, 1):
+    plt.figure('histo {}'.format(i))
+    plt.hist2d(magnetization[i,400:].flatten(),energy[i,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
+
+
+plt.figure('Histogram')
+plt.hist2d(magnetization[:,400:].flatten(),energy[:,400:].flatten())
+
 plt.show()
