@@ -28,7 +28,7 @@
 unsigned int myrand, _ira[256];
 unsigned char _ip, _ip1, _ip2, _ip3;
 
-int N, numPosJ, *graph, *deg, *J, **neigh, *s;
+int N, numPosJ, *graph, *deg, *J, **neigh, *s, n_int;
 int ener0, mag;
 double prob[C + 1];
 
@@ -92,12 +92,12 @@ void error(char *string)
 void allocateAll(void)
 {
   deg = (int *)calloc(N, sizeof(int));
-  graph = (int *)calloc(C * N, sizeof(int));
+  graph = (int *)calloc(C * N / p * p, sizeof(int));
   J = (int *)calloc(C * N, sizeof(int));
   neigh = (int **)calloc(N, sizeof(int *));
   neigh[0] = (int *)calloc(N * C * C, sizeof(int));
   for (int i = 1; i < N; i++)
-    neigh[i] = neigh[0] + i * C * C;
+    neigh[i] = neigh[0] + i * p * C;
   s = (int *)calloc(N, sizeof(int));
 }
 
@@ -105,8 +105,8 @@ int *whereEqual(int *a) // returns the first element of the a-array which is equ
 {
   int i, j;
 
-  for (i = 0; i < C - 1; i++)
-    for (j = i + 1; j < C; j++)
+  for (i = 0; i < p - 1; i++)
+    for (j = i + 1; j < p; j++)
       if (a[i] == a[j])
         return a + j;
   return NULL;
@@ -250,6 +250,8 @@ int main(int argc, char *argv[])
   char path[200] = "";
   char filename[200] = "";
 
+
+  printf("%d\n\n");
   dataFolderFullPath;
   if (dataFolderFullPath == NULL)
   {
@@ -296,10 +298,10 @@ int main(int argc, char *argv[])
     error("in T");
   if (H < 0.0 || H > 1.0)
     error("in H");
-
+  n_int = N * C / p * p;
+  printf("%d\n", n_int);
   printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          C, p, N, Tp_string, T, H, myrand);
-printf("ciao1");
   initRandom();
   allocateAll();
 
