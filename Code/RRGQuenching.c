@@ -115,7 +115,7 @@ int *whereEqual(int *a) // returns the first element of the a-array which is equ
 void initRRGraph(void)
 {
   int i, j, k, changes, tmp, site, *pointer;
-
+  printf("%d", N);
   for (i = 0; i < N; i++)
     for (j = 0; j < C; j++)
       graph[C * i + j] = i;   // We'll have, for c=3, something like = [0 0 0 1 1 1 2 2 2 ... N N N ]
@@ -317,8 +317,9 @@ int main(int argc, char *argv[])
       is=0;
     #endif
 
+    initRRGraph(); 
+    printf("ciao")
   do{
-    initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);
