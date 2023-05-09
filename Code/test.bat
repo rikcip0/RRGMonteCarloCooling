@@ -8,7 +8,7 @@ set T=%3
 set nSamples=%4
 set h=%5
 
-set "max_processes=6"       &:: maximum number of processes to run together   
+set "max_processes=10"       &:: maximum number of processes to run together   
 set "delay=2"       &::at least 2 to avoid that two simulations have the same seed
 
 set "counter=0"

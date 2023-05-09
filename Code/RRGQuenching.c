@@ -10,7 +10,7 @@
 #define C 4
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
-#define t_end 1e5         // number of Monte Carlo sweeps
+#define t_end 1e6         // number of Monte Carlo sweeps
 #define t_meas 200          // number of MC Sweep between measures
 
 #define FNORM (2.3283064365e-10)
@@ -28,7 +28,7 @@ unsigned char _ip, _ip1, _ip2, _ip3;
 
 int N, numPosJ, *graph, *deg, *J, **neigh, *s, n_int;
 int ener0, mag;
-double prob[p + 1];
+double prob[C + 1];
 
 unsigned int randForInit(void)
 {
@@ -114,7 +114,6 @@ void initRRGraph(void)
 {
   int i, j=0, k=0, changes, tmp, site, *pointer;
 
-      printf("oi: %d\n", N);
   for (i = 0; i < N; i++){
     k += C - (i*C > n_int*p);
     for (; j<k; j++)
@@ -181,7 +180,6 @@ void initRRGraph(void)
 void initProb(double beta, double field)
 {
   int i;
-
   i = C;
   while (i >= 0)
   {
@@ -274,7 +272,6 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   N = atoi(argv[1]);
-  printf("we %d\n", N);
   if (isdigit(*argv[2]))
   {
     Tp = atof(argv[2]);
@@ -321,9 +318,9 @@ int main(int argc, char *argv[])
   is = 0;
 #endif
 
-    initRRGraph();
   do
   {
+  initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);
