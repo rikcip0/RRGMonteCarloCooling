@@ -112,16 +112,16 @@ int *whereEqual(int *a) // returns the first element of the a-array which is equ
 
 void initRRGraph(void)
 {
-  int i, j, k, changes, tmp, site, *pointer;
+  int i, j=0, k=0, changes, tmp, site, *pointer;
 
+      printf("oi: %d\n", N);
   for (i = 0; i < N; i++){
-    k= C - (i*C>n_int*p);
-    for (j ; j < n_int*p; j++)
+    k += C - (i*C > n_int*p);
+    for (; j<k; j++)
     {
       graph[j] = i;
-      tmp++;
+      //printf("g %d = %d\n", j , i);
     }
-    j+=k;
   }
 
   for (i = 0; i < p * n_int; i++) // running over all the array and doing casual switches (one for each position)
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   N = atoi(argv[1]);
-
+  printf("we %d\n", N);
   if (isdigit(*argv[2]))
   {
     Tp = atof(argv[2]);
@@ -321,9 +321,9 @@ int main(int argc, char *argv[])
   is = 0;
 #endif
 
+    initRRGraph();
   do
   {
-    initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);
