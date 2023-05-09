@@ -66,7 +66,7 @@ plt.scatter(time[1,100:220], magnetization[:,100:220].mean(0))
 plt.figure('eneAv')
 plt.scatter(time[1,100:220], energy[:,100:220].mean(0))
 
-print(energy[:,100:220].mean(0))
+print()
 plt.figure('Histogram')
 plt.hist2d(magnetization[:,400:].flatten(),energy[:,400:].flatten())
 

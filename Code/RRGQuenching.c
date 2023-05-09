@@ -114,18 +114,15 @@ void initRRGraph(void)
 {
   int i, j, k, changes, tmp, site, *pointer;
 
-  for (i = 0; i < C; i++)
-    for (j = 0; j < N && i * N + j < n_int * p; j++)
+  for (i = 0; i < N; i++){
+    k= C - (i*C>n_int*p);
+    for (j ; j < n_int*p; j++)
     {
-      graph[i * N + j] = j;
+      graph[j] = i;
+      tmp++;
     }
-
-  for (i = 0; i < N; i++)
-    k= C - i/(p * (C-1));
-    for (j = 0; j < k; j++)
-    {
-      graph[i * N + j] = i;
-    }
+    j+=k;
+  }
 
   for (i = 0; i < p * n_int; i++) // running over all the array and doing casual switches (one for each position)
   {
@@ -175,10 +172,10 @@ void initRRGraph(void)
       deg[site]++;
     }
   }
-  /*for (i = 0; i < N; i++)                           //Useful to check on degrees
-  if (deg[i] != C && deg[i] != C-1)
-  printf("Weird degrees situation at site %d, with deg = %d\n",i, deg[i]);
-*/
+  //for (i = 0; i < N; i++){                        //Useful to check on degrees
+  //if (deg[i] != C && deg[i] != C-1)
+  //printf("Weird degrees situation at site %d, with deg = %d\n",i, deg[i]);}
+
 }
 
 void initProb(double beta, double field)
