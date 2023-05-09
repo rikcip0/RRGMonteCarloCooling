@@ -48,7 +48,7 @@ plt.plot(time[1,20:], energy[:,20:].mean(0))
 plt.figure(1)
 plt.plot(time[1,20:], magnetization[:,20:].mean(0))
 
-for i in range(0,99, 1):
+for i in range(0,4, 1):
     plt.figure('mag')
     plt.plot(time[i,20:], magnetization[i,20:])
     plt.figure('ene')
@@ -57,11 +57,16 @@ for i in range(0,99, 1):
 magMin, magMax = np.min(magnetization[:,400:]), np.max(magnetization[:,400:])
 eneMin, eneMax = np.min(energy[:,400:]), np.max(energy[:,400:])
 
-for i in range(0,9, 1):
-    plt.figure('histo {}'.format(i))
-    plt.hist2d(magnetization[i,400:].flatten(),energy[i,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
+#for i in range(0,9, 1):
+    #plt.figure('histo {}'.format(i))
+    #plt.hist2d(magnetization[i,400:].flatten(),energy[i,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
 
+plt.figure('magAv')
+plt.scatter(time[1,100:220], magnetization[:,100:220].mean(0))
+plt.figure('eneAv')
+plt.scatter(time[1,100:220], energy[:,100:220].mean(0))
 
+print(energy[:,100:220].mean(0))
 plt.figure('Histogram')
 plt.hist2d(magnetization[:,400:].flatten(),energy[:,400:].flatten())
 
