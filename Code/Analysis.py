@@ -37,7 +37,6 @@ for nome_file in sorted(file_names):
         time.append(data[:,2])
 
 
-
 # Access the data using the predefined arrays
 time = np.array(time)
 magnetization= np.array(magnetization)
@@ -49,9 +48,9 @@ plt.figure(1)
 plt.plot(time[1,20:], magnetization[:,20:].mean(0))
 
 for i in range(0,4, 1):
-    plt.figure('mag')
+    plt.figure('mag'+str(i))
     plt.plot(time[i,20:], magnetization[i,20:])
-    plt.figure('ene')
+    plt.figure('ene'+str(i))
     plt.plot(time[i,20:], energy[i,20:])
 
 magMin, magMax = np.min(magnetization[:,400:]), np.max(magnetization[:,400:])
@@ -62,9 +61,9 @@ eneMin, eneMax = np.min(energy[:,400:]), np.max(energy[:,400:])
     #plt.hist2d(magnetization[i,400:].flatten(),energy[i,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
 
 plt.figure('magAv')
-plt.scatter(time[1,100:220], magnetization[:,100:220].mean(0))
+plt.scatter(time[1,10:], magnetization[:,10:].mean(0))
 plt.figure('eneAv')
-plt.scatter(time[1,100:220], energy[:,100:220].mean(0))
+plt.scatter(time[1,10:], energy[:,10:].mean(0))
 
 print()
 plt.figure('Histogram')

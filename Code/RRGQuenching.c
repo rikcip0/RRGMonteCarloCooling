@@ -10,13 +10,17 @@
 #define C 4
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
-#define t_end 1e6         // number of Monte Carlo sweeps
 #define t_meas 200          // number of MC Sweep between measures
+
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
 #define FRANDOM (FNORM * RANDOM)
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
+
+#ifndef ANNEAL
+#define t_end 1e6         // number of Monte Carlo sweeps
+#endif
 
 #ifdef _WIN32
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
@@ -266,11 +270,38 @@ int main(int argc, char *argv[])
     */
 
   myrand = time(NULL); // my (RC) initialization, for Windows
+  
+  #ifndef ANNEAL
   if (argc != 6)
   {
     fprintf(stderr, "usage: %s <N> <Tp> <T> <nSamples> <h>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
+  #else 
+  if (argc != 7)
+  {
+    fprintf(stderr, "usage: %s <N> <Tp> <T> <nSamples> <h> <annealingProtocol (int= 1,2,3)>\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  int annealingProtocol = atoi(argv[6]);
+  double T_max = 1.;
+  int nanneal = 300;
+  double deltaT = 0.01;
+  int t_end = nanneal*(int)((T_max/deltaT)+0.5);
+  printf("qui %d\n\n", t_end);
+    if(annealingProtocol==1){
+
+  }else if(annealingProtocol==2){
+
+  }else if(annealingProtocol==3){
+
+  }else{
+    fprintf(stderr, "No identified annealing protocol. Annealing protocols are present as 1,2,3.\n");
+    exit(EXIT_FAILURE);
+  }
+  #endif
+
   N = atoi(argv[1]);
   if (isdigit(*argv[2]))
   {
@@ -345,12 +376,23 @@ int main(int argc, char *argv[])
     ener0 = ener();
 
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
+
+    #ifdef ANNEAL
+    T = T_max;
+    #endif
+
     for (t = 1; t <= t_end; t++)
     {
       oneMCStep(t);
       if (!(t % t_meas))
         fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
+
+      #ifdef ANNEAL
+      if(t%nanneal==0)
+        T-=deltaT;
+      #endif
     }
+    printf("Temperatura finale %f\n\n", T);
     fclose(out);
     is++;
   } while (is < nSamples);
