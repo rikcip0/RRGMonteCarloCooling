@@ -7,11 +7,11 @@
 #include <string.h>
 #include <time.h> //added by me (RC) to initialize the generator
 
-#define C 3
+#define C 4
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
-#define t_end 1e5        // number of Monte Carlo sweeps
-#define t_meas 20         // number of MC Sweep between measures
+#define t_end 1e6         // number of Monte Carlo sweeps
+#define t_meas 200          // number of MC Sweep between measures
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
@@ -22,13 +22,11 @@
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
 #endif
 
-
-
 /* global vars for random generator */
 unsigned int myrand, _ira[256];
 unsigned char _ip, _ip1, _ip2, _ip3;
 
-int N, numPosJ, *graph, *deg, *J, **neigh, *s;
+int N, numPosJ, *graph, *deg, *J, **neigh, *s, n_int;
 int ener0, mag;
 double prob[C + 1];
 
@@ -92,12 +90,12 @@ void error(char *string)
 void allocateAll(void)
 {
   deg = (int *)calloc(N, sizeof(int));
-  graph = (int *)calloc(C * N, sizeof(int));
-  J = (int *)calloc(C * N, sizeof(int));
-  neigh = (int **)calloc(N, sizeof(int *));
-  neigh[0] = (int *)calloc(N * C * C, sizeof(int));
+  graph = (int *)calloc(p * n_int, sizeof(int));    // i-th p-block is the i-th interaction p-plet
+  J = (int *)calloc(C * N, sizeof(int));            // i-th c-block is given by the (at most) c J values of interactions of i-th spin
+  neigh = (int **)calloc(N, sizeof(int *));         // one array for each spin
+  neigh[0] = (int *)calloc(N * p * C, sizeof(int)); // for each spin there is a
   for (int i = 1; i < N; i++)
-    neigh[i] = neigh[0] + i * C * C;
+    neigh[i] = neigh[0] + i * p * C;
   s = (int *)calloc(N, sizeof(int));
 }
 
@@ -105,8 +103,8 @@ int *whereEqual(int *a) // returns the first element of the a-array which is equ
 {
   int i, j;
 
-  for (i = 0; i < C - 1; i++)
-    for (j = i + 1; j < C; j++)
+  for (i = 0; i < p - 1; i++)
+    for (j = i + 1; j < p; j++)
       if (a[i] == a[j])
         return a + j;
   return NULL;
@@ -114,14 +112,20 @@ int *whereEqual(int *a) // returns the first element of the a-array which is equ
 
 void initRRGraph(void)
 {
-  int i, j, k, changes, tmp, site, *pointer;
-  printf("%d", N);
-  for (i = 0; i < N; i++)
-    for (j = 0; j < C; j++)
-      graph[C * i + j] = i;   // We'll have, for c=3, something like = [0 0 0 1 1 1 2 2 2 ... N N N ]
-  for (i = 0; i < C * N; i++) // running over all the array and doing casual switches (one for each position)
+  int i, j=0, k=0, changes, tmp, site, *pointer;
+
+  for (i = 0; i < N; i++){
+    k += C - (i*C > n_int*p);
+    for (; j<k; j++)
+    {
+      graph[j] = i;
+      //printf("g %d = %d\n", j , i);
+    }
+  }
+
+  for (i = 0; i < p * n_int; i++) // running over all the array and doing casual switches (one for each position)
   {
-    j = (int)(FRANDOM * C * N);
+    j = (int)(FRANDOM * p * n_int);
     tmp = graph[j];
     graph[j] = graph[i];
     graph[i] = tmp;
@@ -129,12 +133,12 @@ void initRRGraph(void)
   do
   {
     changes = 0;
-    for (i = 0; i < N; i++)
+    for (i = 0; i < n_int; i++)
     {
-      pointer = whereEqual(graph + i * C); // checking whether there is an interaction with a spin appearing more than once
+      pointer = whereEqual(graph + i * p); // checking whether there is an interaction with a spin appearing more than once
       if (pointer != NULL)                 // in the affirmative case, the first occurrence is switched with a random entry
       {
-        j = (int)(FRANDOM * C * N);
+        j = (int)(FRANDOM * p * n_int);
         tmp = graph[j];
         graph[j] = *pointer;
         *pointer = tmp;
@@ -142,41 +146,40 @@ void initRRGraph(void)
       }
     }
   } while (changes); // keep doing it until no more switches are needed (i.e., no variable is self-interacting)
-
   for (i = 0; i < N; i++)
     deg[i] = 0;
 
   for (i = 0; i < numPosJ; i++) // associate first numPosJ c-plets of graph to interactions with J=1
   {
-    for (j = 0; j < C; j++) // For each site in the c-plet
+    for (j = 0; j < p; j++) // For each site in the p-plet
     {
-      site = graph[i * C + j];
-      for (k = 0; k < C; k++)
-        neigh[site][C * deg[site] + k] = graph[i * C + k]; // For each site, in the array neigh[site] we ll have interaction c-plets to which it participates
+      site = graph[i * p + j];
+      for (k = 0; k < p; k++)
+        neigh[site][p * deg[site] + k] = graph[i * p + k]; // For each site, in the array neigh[site] we ll have interaction c-plets to which it participates
       J[C * site + deg[site]] = 1;                         // in the C s + d position of the array I ll have the coupling of the d interaction of the s spin
       deg[site]++;
     }
   }
-  for (; i < N; i++)
+  for (; i < n_int; i++)
   {
-    for (j = 0; j < C; j++)
+    for (j = 0; j < p; j++)
     {
-      site = graph[i * C + j];
-      for (k = 0; k < C; k++)
-        neigh[site][C * deg[site] + k] = graph[i * C + k];
+      site = graph[i * p + j];
+      for (k = 0; k < p; k++)
+        neigh[site][p * deg[site] + k] = graph[i * p + k];
       J[C * site + deg[site]] = -1;
       deg[site]++;
     }
   }
-  for (i = 0; i < N; i++)
-    if (deg[i] != C)
-      error("nei gradi");
+  //for (i = 0; i < N; i++){                        //Useful to check on degrees
+  //if (deg[i] != C && deg[i] != C-1)
+  //printf("Weird degrees situation at site %d, with deg = %d\n",i, deg[i]);}
+
 }
 
 void initProb(double beta, double field)
 {
   int i;
-
   i = C;
   while (i >= 0)
   {
@@ -198,15 +201,15 @@ int ener(void)
   for (i = 0; i < numPosJ; i++)
   {
     prod = 1;
-    for (j = 0; j < C; j++)
-      prod *= s[graph[C * i + j]];
+    for (j = 0; j < p; j++)
+      prod *= s[graph[p * i + j]];
     res += prod;
   }
-  for (; i < N; i++)
+  for (; i < n_int; i++)
   {
     prod = -1;
-    for (j = 0; j < C; j++)
-      prod *= s[graph[C * i + j]];
+    for (j = 0; j < p; j++)
+      prod *= s[graph[p * i + j]];
     res += prod;
   }
   return -res;
@@ -220,11 +223,11 @@ void oneMCStep(long long int t)
   {
 
     sum = 0;
-    for (j = 0; j < C; j++)
+    for (j = 0; j < C; j++) // loop over the interactions of the site
     {
       prod = J[C * i + j];
-      for (k = 0; k < C; k++)
-        prod *= s[neigh[i][C * j + k]];
+      for (k = 0; k < p; k++) // loop over the sites in the
+        prod *= s[neigh[i][p * j + k]];
       sum += prod;
     }
     ind = sum - (1 + s[i]) / 2;
@@ -269,7 +272,6 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   N = atoi(argv[1]);
-
   if (isdigit(*argv[2]))
   {
     Tp = atof(argv[2]);
@@ -285,7 +287,6 @@ int main(int argc, char *argv[])
   }
 
   strcpy(Tp_string, argv[2]);
-
   T = atof(argv[3]);
   nSamples = atoi(argv[4]);
   H = atof(argv[5]);
@@ -294,32 +295,32 @@ int main(int argc, char *argv[])
   if (H < 0.0 || H > 1.0)
     error("in H");
 
+  n_int = N * C / p;
   printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          C, p, N, Tp_string, T, H, myrand);
 
-  initRandom();
-  allocateAll();
-
   if (Tp > 0.0)
-    numPosJ = N * 0.5 * (1. + tanh(1. / Tp));
+    numPosJ = n_int * 0.5 * (1. + tanh(1. / Tp));
   else if (Tp == 0.0)
-    numPosJ = N;
+    numPosJ = n_int;
   else
   {
-    numPosJ = N / 2;
+    numPosJ = n_int / 2;
   }
 
+  initRandom();
+  allocateAll();
   initProb(1. / T, H);
 
-    #ifdef SINGLESTORY    //if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
-      is = nSamples;      //otherwise, it loops to generate nSamples story
-      #else
-      is=0;
-    #endif
+#ifdef SINGLESTORY // if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
+  is = nSamples;   // otherwise, it loops to generate nSamples story
+#else
+  is = 0;
+#endif
 
-    initRRGraph(); 
-    printf("ciao")
-  do{
+  do
+  {
+  initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);
@@ -333,7 +334,7 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
 
-    fprintf(out, "#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n",C, p, N, Tp_string, T, H, is, myrand);
+    fprintf(out, "#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n", C, p, N, Tp_string, T, H, is, myrand);
 
     mag = 0;
     for (i = 0; i < N; i++)
@@ -351,7 +352,8 @@ int main(int argc, char *argv[])
         fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
     }
     fclose(out);
-  }while(is< nSamples);
+    is++;
+  } while (is < nSamples);
 
   return EXIT_SUCCESS;
 }
