@@ -14,6 +14,8 @@ set "delay=2"       &::at least 2 to avoid that two simulations have the same se
 set "counter=0"
 set "completed_processes=0"
 
+
+make compileSingle
 :loop
 if %counter% equ %nSamples% (
     goto check_completion
