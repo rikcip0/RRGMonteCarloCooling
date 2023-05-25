@@ -41,32 +41,65 @@ for nome_file in sorted(file_names):
 time = np.array(time)
 magnetization= np.array(magnetization)
 energy = np.array(energy)
+nStories = time.__len__
 
 plt.figure(0)
 plt.plot(time[1,20:], energy[:,20:].mean(0))
 plt.figure(1)
 plt.plot(time[1,20:], magnetization[:,20:].mean(0))
 
+
+#FIRST TYPE OF PLOTS: ENERGY AND MAGNETIZATION BEHAVIOURS FOR SOME STORIES/SAMPLES, AND FOR AVERAGE OVER ALL STORIES
 for i in range(0,4, 1):
     plt.figure('mag'+str(i))
     plt.plot(time[i,20:], magnetization[i,20:])
     plt.figure('ene'+str(i))
     plt.plot(time[i,20:], energy[i,20:])
 
+
+
+
+
+#SECOND TYPE OF PLOTS: 2D HISTOGRAMS (within the same frame) of single stories (ener,mag) and of all stories (en,mag)
 magMin, magMax = np.min(magnetization[:,400:]), np.max(magnetization[:,400:])
 eneMin, eneMax = np.min(energy[:,400:]), np.max(energy[:,400:])
 
-#for i in range(0,9, 1):
-    #plt.figure('histo {}'.format(i))
-    #plt.hist2d(magnetization[i,400:].flatten(),energy[i,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
+for i in range(0,10, 1):
+    plt.figure('histo {}'.format(i))
+    plt.hist2d(magnetization[i,400:].flatten(),energy[i,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
+
+plt.figure('histoGen {}'.format(i))
+plt.hist2d(magnetization[:,400:].flatten(),energy[:,400:].flatten(), range=[[magMin,magMax],[eneMin,eneMax]])
+
 
 plt.figure('magAv')
 plt.scatter(time[1,10:], magnetization[:,10:].mean(0))
 plt.figure('eneAv')
 plt.scatter(time[1,10:], energy[:,10:].mean(0))
 
-print()
-plt.figure('Histogram')
-plt.hist2d(magnetization[:,400:].flatten(),energy[:,400:].flatten())
+plt.figure('magAvAv')
+mean = np.mean(magnetization[:,-1])
+variance = np.var(magnetization[:,-1])
+
+# Plotta l'istogramma
+plt.hist(magnetization[:,-1])
+plt.title("Istogramma")
+plt.xlabel("Valore")
+plt.ylabel("Frequenza")
+
+# Aggiungi valore medio e varianza al grafico
+plt.text(0.05, 0.9, f"Valore medio: {mean:.2f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.85, f"Varianza: {variance:.2f}", transform=plt.gca().transAxes)
+
+plt.figure('eneAvAv')
+mean = np.mean(energy[:,-1])
+variance = np.var(energy[:,-1])
+
+# Plotta l'istogramma
+plt.hist(energy[:,-1])
+
+# Aggiungi valore medio e varianza al grafico
+plt.text(0.05, 0.9, f"Valore medio: {mean:.2f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.85, f"Varianza: {variance:.2f}", transform=plt.gca().transAxes)
 
 plt.show()

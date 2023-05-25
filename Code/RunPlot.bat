@@ -24,7 +24,7 @@ if "%simType%"=="quench" (
 echo Simulations will be launched using the executable %program%.
 
 echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
-call Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
+Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 
 ..\Utilities\SendResults.py
 

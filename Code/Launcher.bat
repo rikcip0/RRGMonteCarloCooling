@@ -34,6 +34,7 @@ if %active_processes% lss %max_processes% (
     start /B "" "%program%" %N% %Tp% %T% %counter% %h% %deltaT% %nanneal%
     set /a "counter+=1"
     echo Started process %counter%
+    echo .
     ) 
 )
 
@@ -41,7 +42,7 @@ ping -n %delay% 127.0.0.1 >NUL
 goto loop
 
 :check_completion
-tasklist /FI "IMAGENAME eq singleCool.exe" 2>NUL | find /c /i "singleCool.exe" > temp.txt
+tasklist /FI "IMAGENAME eq %program%" 2>NUL | find /c /i "%program%" > temp.txt
 set /p "active_processes=" < temp.txt
 del temp.txt
 
