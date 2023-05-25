@@ -1,19 +1,33 @@
 # target: dependencies... se target è stato fatto dopo l'ultima modifica di dependencies non lo rifa.
-compileMultiple:
-	gcc RRGQuenching.c -o multipleCool.exe
-	@echo Program compiled in multipleCool
+compileMultipleQuench:
+	gcc RRGQuenching.c -o multipleQuench.exe
+	@echo Program compiled in multipleQuench
 	@echo .
 
-compileSingle:
-	gcc -DSINGLESTORY RRGQuenching.c -o singleCool.exe
-	@echo Program compiled in singleCool
+compileSingleQuench:
+	gcc -DSINGLESTORY RRGQuenching.c -o singleQuench.exe
+	@echo Program compiled in singleQuench
 	@echo .
+
+
+compileMultipleAnneal:
+	gcc -DANNEAL RRGQuenching.c -o multipleAnneal.exe
+	@echo Program compiled in multipleAnneal
+	@echo .
+
+compileSingleAnneal:
+	gcc -DANNEAL -DSINGLESTORY RRGQuenching.c -o singleAnneal.exe
+	@echo Program compiled in singleAnneal
+	@echo .
+
 
 cleanAll: 
-	del singleCool.exe
-	del multipleCool.exe
-	@echo singleCool executable deleted
-	@echo multipleCool executable deleted
+	del singleQuench.exe
+	del multipleQuench.exe
+	del singleAnneal.exe
+	del multipleAnneal.exe
+	@echo singleCool executables deleted
+	@echo multipleCool executables deleted
 
 cleanSingle: 
 	del singleCool.exe

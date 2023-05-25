@@ -1,18 +1,33 @@
 @echo off
+setlocal
 
-set N=%1
-set Tp=%2
-set T=%3
-set nSample=%4
-set h=%5
+set simType=%1
+set N=%2
+set Tp=%3
+set T=%4
+set nSample=%5
+set h=%6
+set deltaT=%7
+set nanneal=%8
 
-make compile
+if "%simType%"=="quench" (
+    set program=singleQuench.exe
+    make compileSingleQuench
+) else if "%simType%"=="anneal" (
+    set program=singleAnneal.exe
+    make compileSingleAnneal
+) else (
+    echo The first parameter is the simulation type. It can be "quench" or "anneal".
+    goto end
+)
 
-cool %N% %Tp% %T% %nSample% %h%
+echo Simulations will be launched using the executable %program%.
 
-PlotEnergy.py %N% %Tp% %T% %nSample% %h% 10000
-PlotMag.py
+echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
+call Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 
 ..\Utilities\SendResults.py
+
+:end
 
 pause

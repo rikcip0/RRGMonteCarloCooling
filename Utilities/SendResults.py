@@ -8,7 +8,7 @@ from email import encoders
 
 
 # Aggiunta dell'allegato
-FOLDER_PATH = os.path.abspath('..\\Data\\LastRun')
+FOLDER_PATH = os.path.abspath('..\\Data\\LastRun\\Analysis')
 
 # Parametri per l'invio dell'email
 sender = 'riccardo.sender@gmail.com'

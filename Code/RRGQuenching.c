@@ -10,8 +10,7 @@
 #define C 4
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
-#define t_meas 200          // number of MC Sweep between measures
-
+#define t_meas 200        // number of MC Sweep between measures
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
@@ -19,7 +18,10 @@
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
 
 #ifndef ANNEAL
-#define t_end 1e6         // number of Monte Carlo sweeps
+#define t_end 1e6 // number of Monte Carlo sweeps
+#define simType "Quenching"
+#else
+#define simType "Annealing"
 #endif
 
 #ifdef _WIN32
@@ -116,14 +118,15 @@ int *whereEqual(int *a) // returns the first element of the a-array which is equ
 
 void initRRGraph(void)
 {
-  int i, j=0, k=0, changes, tmp, site, *pointer;
+  int i, j = 0, k = 0, changes, tmp, site, *pointer;
 
-  for (i = 0; i < N; i++){
-    k += C - (i*C > n_int*p);
-    for (; j<k; j++)
+  for (i = 0; i < N; i++)
+  {
+    k += C - (i * C > n_int * p);
+    for (; j < k; j++)
     {
       graph[j] = i;
-      //printf("g %d = %d\n", j , i);
+      // printf("g %d = %d\n", j , i);
     }
   }
 
@@ -175,10 +178,9 @@ void initRRGraph(void)
       deg[site]++;
     }
   }
-  //for (i = 0; i < N; i++){                        //Useful to check on degrees
-  //if (deg[i] != C && deg[i] != C-1)
-  //printf("Weird degrees situation at site %d, with deg = %d\n",i, deg[i]);}
-
+  // for (i = 0; i < N; i++){                        //Useful to check on degrees
+  // if (deg[i] != C && deg[i] != C-1)
+  // printf("Weird degrees situation at site %d, with deg = %d\n",i, deg[i]);}
 }
 
 void initProb(double beta, double field)
@@ -246,7 +248,7 @@ void oneMCStep(long long int t)
 
 int main(int argc, char *argv[])
 {
-  int i, is, nSamples;
+  int i, is = 0, nSamples;
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
@@ -270,46 +272,38 @@ int main(int argc, char *argv[])
     */
 
   myrand = time(NULL); // my (RC) initialization, for Windows
-  
-  #ifndef ANNEAL
+
+#ifndef ANNEAL
   if (argc != 6)
   {
     fprintf(stderr, "usage: %s <N> <Tp> <T> <nSamples> <h>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
-  #else 
-  if (argc != 7)
+  T = atof(argv[3]);
+#else
+  if (argc != 8)
   {
-    fprintf(stderr, "usage: %s <N> <Tp> <T> <nSamples> <h> <annealingProtocol (int= 1,2,3)>\n", argv[0]);
+    fprintf(stderr, "usage: %s <N> <Tp> <T_max> <nSamples> <h> <deltaT(double)> <nAnneal (int)>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  int annealingProtocol = atoi(argv[6]);
-  double T_max = 1.;
-  int nanneal = 300;
-  double deltaT = 0.01;
-  int t_end = nanneal*(int)((T_max/deltaT)+0.5);
-  printf("qui %d\n\n", t_end);
-    if(annealingProtocol==1){
+  T = atof(argv[3]);
 
-  }else if(annealingProtocol==2){
-
-  }else if(annealingProtocol==3){
-
-  }else{
-    fprintf(stderr, "No identified annealing protocol. Annealing protocols are present as 1,2,3.\n");
-    exit(EXIT_FAILURE);
-  }
-  #endif
+  double T_max = T;
+  double deltaT = atof(argv[6]);
+  int nanneal = atoi(argv[7]);
+  int t_end = nanneal * (int)((T / deltaT) + 1.4);
+#endif
 
   N = atoi(argv[1]);
+
   if (isdigit(*argv[2]))
   {
     Tp = atof(argv[2]);
   }
   else if (strcmp(argv[2], "inf") == 0)
   {
-    Tp = -1;             //TO BE DONE
+    Tp = -1; // TO BE DONE
   }
   else
   {
@@ -318,17 +312,17 @@ int main(int argc, char *argv[])
   }
 
   strcpy(Tp_string, argv[2]);
-  T = atof(argv[3]);
+
   nSamples = atoi(argv[4]);
   H = atof(argv[5]);
   if (T <= 0.0)
     error("in T");
   if (H < 0.0 || H > 1.0)
-    error("in H");
+    error("in h");
 
   n_int = N * C / p;
-  printf("#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
-         C, p, N, Tp_string, T, H, myrand);
+  printf("#%s  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
+         simType, C, p, N, Tp_string, T, H, myrand);
 
   if (Tp > 0.0)
     numPosJ = n_int * 0.5 * (1. + tanh(1. / Tp));
@@ -345,13 +339,11 @@ int main(int argc, char *argv[])
 
 #ifdef SINGLESTORY // if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
   is = nSamples;   // otherwise, it loops to generate nSamples story
-#else
-  is = 0;
 #endif
 
   do
   {
-  initRRGraph();
+    initRRGraph();
     strcpy(path, "");
     sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
     strcat(path, dataFolderFullPath);
@@ -365,7 +357,7 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
 
-    fprintf(out, "#Quenching  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n", C, p, N, Tp_string, T, H, is, myrand);
+ 
 
     mag = 0;
     for (i = 0; i < N; i++)
@@ -375,24 +367,39 @@ int main(int argc, char *argv[])
     }
     ener0 = ener();
 
-    fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
-    #ifdef ANNEAL
-    T = T_max;
-    #endif
+#ifndef ANNEAL
+
+    fprintf(out, "#%s  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n",
+            simType, C, p, N, Tp_string, T, H, is, myrand);
+    fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
     for (t = 1; t <= t_end; t++)
     {
       oneMCStep(t);
       if (!(t % t_meas))
         fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
-
-      #ifdef ANNEAL
-      if(t%nanneal==0)
-        T-=deltaT;
-      #endif
     }
-    printf("Temperatura finale %f\n\n", T);
+#else
+
+    fprintf(out, "#%s  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d deltaT= %f n_anneal=%d seed = %u\n#mag ener time\n",
+            simType, C, p, N, Tp_string, T, H, is, deltaT, nanneal, myrand);
+    fprintf(out, "%i %i 0\n", mag, ener() - ener0);
+
+    T = T_max;
+    for (t = 1; t <= t_end;)
+    {
+      initProb(1. / T, H);
+      for (i = 0; i < nanneal; i++, t++)
+      {
+        oneMCStep(t);
+        if (!(t % t_meas))
+          fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
+      }
+      T -= deltaT;
+    }
+#endif
+
     fclose(out);
     is++;
   } while (is < nSamples);
