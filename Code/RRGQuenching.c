@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h> //added by me (RC) to initialize the generator
 
-#define C 4
+#define C 3
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
 #define t_meas 200        // number of MC Sweep between measures
@@ -18,7 +18,7 @@
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
 
 #ifndef ANNEAL
-#define t_end 1e6 // number of Monte Carlo sweeps
+#define t_end 1e4 // number of Monte Carlo sweeps
 #define simType "Quenching"
 #else
 #define simType "Annealing"
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  const char *dataFolderFullPath = realpath("..\\Data", NULL);
+  const char *dataFolderFullPath = realpath("..\\Data\\ThisRun\\", NULL);
   char path[200] = "";
   char filename[200] = "";
 
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
     error("in h");
 
   n_int = N * C / p;
-  printf("#%s  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
+  printf("#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          simType, C, p, N, Tp_string, T, H, myrand);
 
   if (Tp > 0.0)
@@ -339,25 +339,42 @@ int main(int argc, char *argv[])
 
 #ifdef SINGLESTORY // if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
   is = nSamples;   // otherwise, it loops to generate nSamples story
+
+  if (is == 0)
+  {
+    strcpy(path, "");
+    sprintf(filename, "Info.txt");
+    strcat(path, dataFolderFullPath);
+    strcat(path, filename);
+    FILE *out = fopen(path, "a");
+
+    if (out == NULL)
+    {
+      printf("Error in the opening of the file %s\n\n", path);
+      exit(EXIT_FAILURE);
+    }
+
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n\n",
+            simType, C, p, N, Tp_string, T, H);
+  fclose(out);
+  }
 #endif
 
   do
   {
     initRRGraph();
     strcpy(path, "");
-    sprintf(filename, "\\ThisRun\\McStory_%d.txt", is);
+    sprintf(filename, "McStories\\Story_%d.txt", is);
     strcat(path, dataFolderFullPath);
     strcat(path, filename);
     FILE *out = fopen(path, "w+");
 
+
     if (out == NULL)
     {
       printf("Error in the creation of the file %s\n\n", path);
-      printf("%s\n", path);
       exit(EXIT_FAILURE);
     }
-
- 
 
     mag = 0;
     for (i = 0; i < N; i++)
@@ -367,10 +384,9 @@ int main(int argc, char *argv[])
     }
     ener0 = ener();
 
-
 #ifndef ANNEAL
 
-    fprintf(out, "#%s  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n",
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n",
             simType, C, p, N, Tp_string, T, H, is, myrand);
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
@@ -382,7 +398,7 @@ int main(int argc, char *argv[])
     }
 #else
 
-    fprintf(out, "#%s  C = %i p=%i  N = %i  Tp = %s  T = %f  H = %f  story = %d deltaT= %f n_anneal=%d seed = %u\n#mag ener time\n",
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  story = %d deltaT= %f n_anneal=%d seed = %u\n#mag ener time\n",
             simType, C, p, N, Tp_string, T, H, is, deltaT, nanneal, myrand);
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 

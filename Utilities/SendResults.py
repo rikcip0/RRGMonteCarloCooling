@@ -8,17 +8,33 @@ from email import encoders
 
 
 # Aggiunta dell'allegato
-FOLDER_PATH = os.path.abspath('..\\Data\\LastRun\\Analysis')
+FOLDER_PATH = os.path.abspath('..\\Data\\ThisRun')
 
 # Parametri per l'invio dell'email
 sender = 'riccardo.sender@gmail.com'
 receiver = 'cipolloni.1714653@studenti.uniroma1.it'
 password = 'jdbhfoxtsogsptql'
-object = 'Quenching results!'
-body = 'The results for your simulation with inputs\n'
+object = 'Results for '
+body = ""
 
-with open(FOLDER_PATH+'\\Results.txt', 'r') as file:
+with open(os.path.join(FOLDER_PATH, "Info.txt"), 'r') as file:
     body+= file.read()
+
+
+# Trova l'indice del carattere '#'
+hashPosition = body.find("#")
+
+# Verifica se il carattere '#' è presente nel file
+if hashPosition!= -1:
+    # Trova l'indice del primo spazio dopo il carattere '#'
+    nextSpacePosition = body.find(" ", hashPosition)
+
+    # Estrai la parola successiva al carattere '#'
+    symType = body[hashPosition + 1:nextSpacePosition]
+else:
+    print("No simulation type specified by '#' has been found.")
+
+object += (symType + "!")
 
 # Creazione del messaggio email
 msg = MIMEMultipart()
@@ -31,13 +47,13 @@ msg.attach(MIMEText(body))
 
 
 # Ottieni la lista di tutti i file nella cartella
-file_list = os.listdir(FOLDER_PATH)
+file_list = os.listdir(os.path.join(FOLDER_PATH, "Plots"))
 # Filtra la lista di file escludendo quelli con estensione .txt
 file_list = [f for f in file_list if not f.endswith('.txt')]
 
 # Aggiungi tutti i file come allegati al messaggio email
 for file in file_list:
-    file_path = os.path.join(FOLDER_PATH, file)
+    file_path = os.path.join(FOLDER_PATH, "Plots", file)
     attachment = MIMEBase('application', "octet-stream")
     attachment.set_payload(open(file_path, "rb").read())
     encoders.encode_base64(attachment)
@@ -51,7 +67,7 @@ with smtplib.SMTP('smtp.gmail.com', 587) as server:
     server.sendmail(sender, receiver, msg.as_string())
     server.quit()
 
-body = 'Inviata email con allegati:\n'
+body = 'Sent an email with attachments:\n'
 for file in file_list:
     body += (file +'\n')
 print(body)

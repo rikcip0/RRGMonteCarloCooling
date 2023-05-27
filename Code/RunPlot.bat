@@ -23,9 +23,27 @@ if "%simType%"=="quench" (
 
 echo Simulations will be launched using the executable %program%.
 
-echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
-Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
+set "McStoriesPath=..\Data\ThisRun\McStories"
 
+if not exist "%McStoriesPath%" (
+    echo La cartella non esiste. La sto creando...
+    mkdir "%McStoriesPath%"
+    if errorlevel 1 (
+        echo Errore durante la creazione della cartella.
+    ) else (
+        echo Cartella creata con successo.
+    )
+) else (
+    echo La cartella esiste già.
+)
+
+WriteInfo.py Simulation %nSample%
+
+echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
+call Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
+
+WriteInfo.py Analysis %nSample%
+Analysis.py
 ..\Utilities\SendResults.py
 
 :end
