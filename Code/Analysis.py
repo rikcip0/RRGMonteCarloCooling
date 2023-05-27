@@ -12,6 +12,8 @@ destination_path = "../Data/ThisRun/Plots"
 if not os.path.exists(destination_path):
     os.makedirs(destination_path)
 
+results_path = "../Data/ThisRun/Results.txt"
+
 magnetization =[]
 energy = []
 time = []
@@ -49,7 +51,8 @@ magnetization= np.array(magnetization)
 energy = np.array(energy)
 nStories = time.__len__
 
-
+magnetization/=399999
+energy/=399999
 
 plt.rcParams["figure.autolayout"] = True
 
@@ -169,10 +172,9 @@ for fig_name in figs:
 
 
 
-#plt.show(block=False)
-#plt.close('all')
+#plt.show()
 
-with open(os.path.join(destination_path, "Results.txt"), "w") as file:
+with open(results_path, "w") as file:
     # Scrivi i contenuti nel file
     file.write("Questo è un esempio di file di risultati.\n")
     file.write("Aggiungi qui i tuoi risultati o altre informazioni.\n")
