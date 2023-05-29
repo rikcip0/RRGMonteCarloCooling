@@ -3,28 +3,90 @@ import re
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import re
+import fileinput
 
-# Define the path of the TXT files to analyze
-file_path = "../Data/ThisRun/McStories/*.txt"
+# Define the path of the TXT files to ana lyze
+Stories_path = "../Data/ThisRun/McStories/*.txt"
+# Define the path of thetext file with infos on the input
+InputInfo_path = "../Data/ThisRun/Info.txt"
 
-# Define the path of the destination for the plots
-destination_path = "../Data/ThisRun/Plots"
-if not os.path.exists(destination_path):
-    os.makedirs(destination_path)
+# Define the path of destination for the plots
+Plots_path = "../Data/ThisRun/Plots"
+if not os.path.exists(Plots_path):
+    os.makedirs(Plots_path)
+plt.rcParams["figure.autolayout"] = True
 
+
+# Define the path of the destination for the results
 results_path = "../Data/ThisRun/Results.txt"
 
-magnetization =[]
-energy = []
-time = []
-
-# Get the file names in the folder
-file_names = glob.glob(file_path)
+# Get the stories names in the folder
+file_names = glob.glob(Stories_path)
 
 # Check if there are no matching files
 if not file_names:
     raise FileNotFoundError("No files found in the specified path.")
 
+
+
+#EXTRACTING INPUT PARAMETERS
+# Open the text file with infos on the input in read mode
+with open(InputInfo_path, "r") as file:
+    # Read the content of the file
+    content = file.read()
+
+    # Find the line starting with "#"
+    params_line = next((line for line in content.split("\n") if line.startswith("#")), None)
+
+    if params_line is not None:
+        # Extract the symType
+        symType = re.search(r"#(\w+)", params_line).group(1)
+
+        # Search for parameters and values using regular expressions
+        results = re.findall(r"\b(\w+)\s*=\s*([^\s#]+)", params_line)
+
+        # Create a dictionary to store the parameters and their values
+        parameters = {}
+        for result in results:
+            parameter = result[0]
+            value = result[1]
+            if "." in value:
+                # If the value contains a decimal point, convert to float
+                value = float(value)
+            else:
+                try:
+                    # Try converting the value to float
+                    value = int(value)
+                except ValueError:
+                    # If the conversion fails, keep the value as string
+                    pass
+            parameters[parameter] = value
+    
+        # Print the keyword, parameters, and their values
+        print("Analyzing simulation of type:", symType, "\nwith parameters")
+        for parameter, value in parameters.items():
+            print(parameter, "=", value, end=" ")
+        print("\n")
+    else:
+        print("No line specifying parameters (starting with '#') found in the file.")
+        # Find the line with "paramSpecial"
+    
+    projectedStories_line = next((line for line in content.split("\n") if line.startswith("projectedStories")), None)
+
+    if projectedStories_line is not None:
+        # Extract the value of "paramSpecial"
+        projectedStories = re.search(r"=\s*([^\s#]+)", projectedStories_line).group(1)
+
+        # Print the value of "paramSpecial"
+        print("projectedStories =", projectedStories)
+
+    actual_stories_line_exists = next((line for line in content.split("\n") if line.startswith("actualStories")), None)
+
+
+magnetization =[]
+energy = []
+time = []
 
 # Leggi i file e popola gli array delle colonne
 for nome_file in sorted(file_names):
@@ -49,12 +111,18 @@ for nome_file in sorted(file_names):
 time = np.array(time)
 magnetization= np.array(magnetization)
 energy = np.array(energy)
-nStories = time.__len__
 
-magnetization/=399999
-energy/=399999
+nStories = time.shape[0]
+print("nStories =", nStories)
 
-plt.rcParams["figure.autolayout"] = True
+if not actual_stories_line_exists:
+    with open(InputInfo_path, "a") as file:
+        file.write(f"actualStories = {nStories}\n")
+
+magnetization/=parameters["N"]
+energy/=parameters["N"]
+
+
 
 
 #FIRST TYPE OF PLOTS: ENERGY AND MAGNETIZATION BEHAVIOURS FOR SOME STORIES/SAMPLES, AND FOR AVERAGE OVER ALL STORIES
@@ -147,8 +215,8 @@ plt.hist(magnetization[:,-1], density=True)
 plt.title("Histogram of")
 plt.xlabel("Magnetization")
 plt.ylabel("Frequency")
-plt.text(0.05, 0.9, f"Mean value: {meanMagnetization:.2f}", transform=plt.gca().transAxes)
-plt.text(0.05, 0.85, f"\Sigma: {sigmaMagnetization:.2f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.9, f"Mean value: {meanMagnetization:.5f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.85, f"\Sigma: {sigmaMagnetization:.5f}", transform=plt.gca().transAxes)
 
 plt.figure('HistogramFinalEnergies')
 meanEnergy = np.mean(energy[:,-1])
@@ -158,15 +226,15 @@ plt.hist(energy[:,-1], density=True)
 plt.title("Histogram of")
 plt.xlabel("Energy")
 plt.ylabel("Frequency")
-plt.text(0.05, 0.9, f"Mean value: {meanEnergy:.2f}", transform=plt.gca().transAxes)
-plt.text(0.05, 0.85, f"\Sigma: {sigmaEnergy:.2f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.9, f"Mean value: {meanEnergy:.5f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.85, f"\Sigma: {sigmaEnergy:.5f}", transform=plt.gca().transAxes)
 
 
 
 figs = plt.get_figlabels()  # Ottieni i numeri di tutte le figure create
 for fig_name in figs:
     fig = plt.figure(fig_name)
-    filename = os.path.join(destination_path, f'{fig_name}.png')
+    filename = os.path.join(Plots_path, f'{fig_name}.png')
     fig.savefig(filename)
 
 

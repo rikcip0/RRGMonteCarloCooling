@@ -354,8 +354,17 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
 
-    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n\n",
+  #ifdef ANNEAL
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
+    fprintf(out, "t_end = t_meas = \n\n",
+            t_end, t_meas);
+  #else
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
+            simType, C, p, N, Tp_string, T, H);
+    fprintf(out, "t_end = t_meas = \n\n",
+            t_end, t_meas);
+  #endif
   fclose(out);
   }
 #endif
@@ -379,7 +388,7 @@ int main(int argc, char *argv[])
     mag = 0;
     for (i = 0; i < N; i++)
     {
-      s[i] = (int)(FRANDOM > 0.5 ? 1 : -1); // different wrt the planted case, where all s[i] are 1
+      s[i] = (int)(FRANDOM > 0.5 ? 1 : -1); // different wrt to the planted state initial configuration case, where all s[i] are 1
       mag += s[i];
     }
     ener0 = ener();

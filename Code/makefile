@@ -1,4 +1,11 @@
 # target: dependencies... se target è stato fatto dopo l'ultima modifica di dependencies non lo rifa.
+.PHONY: help
+
+help:
+	@echo List of possible targets:
+	@echo   archiveRun - Move run data, info and plots from ThisRun to Archive
+	@echo   send - Send an email to RC with plots and results from ThisRun
+
 compileMultipleQuench:
 	gcc RRGQuenching.c -o multipleQuench.exe
 	@echo Program compiled in multipleQuench
@@ -20,6 +27,11 @@ compileSingleAnneal:
 	@echo Program compiled in singleAnneal
 	@echo .
 
+archiveRun:
+	python ..\Utilities\CreateFolder.py
+
+send:
+	python ..\Utilities\SendResults.py
 
 cleanAll: 
 	del singleQuench.exe

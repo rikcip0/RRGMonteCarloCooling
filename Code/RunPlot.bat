@@ -26,15 +26,13 @@ echo Simulations will be launched using the executable %program%.
 set "McStoriesPath=..\Data\ThisRun\McStories"
 
 if not exist "%McStoriesPath%" (
-    echo La cartella non esiste. La sto creando...
+    echo Monte Carlo stories folder does not exist. I am creating it...
     mkdir "%McStoriesPath%"
     if errorlevel 1 (
-        echo Errore durante la creazione della cartella.
+        echo Error during the creation of the folder
     ) else (
-        echo Cartella creata con successo.
+        echo Folder created succesfully
     )
-) else (
-    echo La cartella esiste già.
 )
 
 WriteInfo.py Simulation %nSample%
