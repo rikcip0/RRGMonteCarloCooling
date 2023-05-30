@@ -11,20 +11,20 @@ def check_subfolder_existence(parent_folder, subfolder_name):
     subfolder_path = os.path.join(parent_folder, subfolder_name)
     # Check for subfolders with the distinguishing string
     run_count = 1
-    while True:
-        run_subfolder = f"{subfolder_name}_run{run_count}"
-        run_subfolder_path = os.path.join(parent_folder, run_subfolder)
+    if os.path.exists(subfolder_path):
+        run_count = 2
+    else:
+        while True:
+            run_subfolder = f"{subfolder_name}_run{run_count}"
+            run_subfolder_path = os.path.join(parent_folder, run_subfolder)
 
-        if not os.path.exists(subfolder_path):
-            break
-        else:
             if not os.path.exists(run_subfolder_path):
                 break 
             run_count += 1
 
-        if run_count > 20:
-            print(f"There already many runs for '{subfolder_name}' in the folder '{parent_folder}'.")
-            break
+            if run_count > 20:
+                print(f"There already many runs for '{subfolder_name}' in the folder '{parent_folder}'.")
+                break
 
     return run_subfolder_path
 
