@@ -4,7 +4,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import re
-import fileinput
 
 # Define the path of the TXT files to ana lyze
 Stories_path = "../Data/ThisRun/McStories/*.txt"
@@ -13,10 +12,6 @@ InputInfo_path = "../Data/ThisRun/Info.txt"
 
 # Define the path of destination for the plots
 Plots_path = "../Data/ThisRun/Plots"
-if not os.path.exists(Plots_path):
-    os.makedirs(Plots_path)
-plt.rcParams["figure.autolayout"] = True
-
 
 # Define the path of the destination for the results
 results_path = "../Data/ThisRun/Results.txt"
@@ -126,7 +121,7 @@ energy/=parameters["N"]
 
 
 #FIRST TYPE OF PLOTS: ENERGY AND MAGNETIZATION BEHAVIOURS FOR SOME STORIES/SAMPLES, AND FOR AVERAGE OVER ALL STORIES
-for i in range(0,4, 1):
+for i in range(0,3, 1):
     plt.figure('MagnetizationStory'+str(i))
     plt.title('Magnetization evolution for story #'+str(i))
     plt.xlabel('MC time')  
@@ -146,44 +141,77 @@ for i in range(0,4, 1):
 
 
 #SECOND TYPE OF PLOTS: 2D HISTOGRAMS (within the same frame) of single stories (ener,mag) and of all stories (en,mag)
-magMin, magMax = np.min(magnetization[:,40:]), np.max(magnetization[:,40:])
-eneMin, eneMax = np.min(energy[:,40:]), np.max(energy[:,40:])
+lastTimes = 200
+totalOccurrences = lastTimes*nStories
+magMin, magMax = np.min(magnetization[:,-lastTimes:]), np.max(magnetization[:,-lastTimes:])
+eneMin, eneMax = np.min(energy[:,-lastTimes:]), np.max(energy[:,-lastTimes:])
 
-for i in range(0,5, 1):
+hist, xedges, yedges = np.histogram2d(energy[:,-lastTimes:].flatten(), magnetization[:,-lastTimes:].flatten(), range=[[eneMin,eneMax],[magMin,magMax]])
+
+# Ottieni le dimensioni dell'istogramma
+num_bins_energy = hist.shape[0]
+num_bins_magnetization = hist.shape[1]
+non_empty_bins = np.count_nonzero(hist)
+
+while True:
+    if (non_empty_bins > totalOccurrences**0.5 and num_bins_energy>totalOccurrences/50) :
+        break
+    num_bins_energy*=2
+    num_bins_magnetization*=2
+    hist, xedges, yedges = np.histogram2d(energy[:,-lastTimes:].flatten(), magnetization[:,-lastTimes:].flatten(), range=[[eneMin,eneMax],[magMin,magMax]], bins=(num_bins_energy, num_bins_magnetization))
+    non_empty_bins = np.count_nonzero(hist)
+
+
+for i in range(0,3, 1):
     # Calcola il numero di bin predefinito
-    while True:
-        hist, xedges, yedges = np.histogram2d(magnetization[i,40:],energy[i,40:], range=[[magMin,magMax],[eneMin,eneMax]])
 
-        # Ottieni le dimensioni dell'istogramma
-        num_bins_x = hist.shape[0]
-        num_bins_y = hist.shape[1]
-        non_empty_bins = np.count_nonzero(hist)
+        plt.figure('EnergyMagnetizationHistogramStory'+str(i))
+        plt.title(f'Histogram of magnetizations and energies\n(last {lastTimes} MCtimes, for story #{i}')
+        plt.xlabel('Magnetization')  
+        plt.ylabel('Energy')
+        hist, xedges, yedges = np.histogram2d(energy[i,-lastTimes:].flatten(), magnetization[i,-lastTimes:].flatten(),
+                                                   bins=(num_bins_energy, num_bins_magnetization),
+                                      range=[[eneMin,eneMax],[magMin,magMax]])
+        normalized_hist = hist / np.sum(hist)
+        plt.imshow(normalized_hist.T, extent=[magMin, magMax, eneMin, eneMax], origin='lower', aspect='auto', cmap='plasma')
+        plt.colorbar()
 
-        num_bins_x*=2
-        num_bins_y*=2
-        if (non_empty_bins > 5 or  num_bins_x>20 or True) :
-            plt.figure('EnergyMagnetizationHistogramStory'+str(i))
-            plt.title('Histogram of magnetization and energies\n for last times of story #{}'.format(i))
-            plt.xlabel('Magnetization')  
-            plt.ylabel('Energy')
-            hist, xedges, yedges = np.histogram2d(magnetization[i,40:], energy[i,40:].flatten(),
-                                                   bins=(num_bins_x, num_bins_y),
-                                      range=[[magMin, magMax], [eneMin, eneMax]])
-            normalized_hist = hist / np.sum(hist)
-            plt.imshow(normalized_hist.T, extent=[magMin, magMax, eneMin, eneMax], origin='lower', aspect='auto', cmap='plasma')
-            plt.colorbar()
-            break
 
-plt.figure('EnergyMagnetizationHistogramAll')
-plt.title('Histogram of magnetization and energies\n for last times for all stories')
-plt.xlabel('Magnetization')  
-plt.ylabel('Energy')
-hist, xedges, yedges = np.histogram2d(magnetization[:,40:].flatten(), energy[:,40:].flatten(), bins=(num_bins_x, num_bins_y),
-                                      range=[[magMin, magMax], [eneMin, eneMax]])
-normalized_hist = hist / np.sum(hist)
-plt.imshow(normalized_hist.T, extent=[magMin, magMax, eneMin, eneMax], origin='lower', aspect='auto', cmap='plasma')
-#plt.hist2d(magnetization[:,40:].flatten(), energy[:,40:].flatten(), bins=(num_bins_x, num_bins_y), range=[[magMin,magMax],[eneMin,eneMax]], density=True)
-plt.colorbar()
+
+
+# Creazione dei sottografici
+plt.rcParams.update(plt.rcParamsDefault)
+fig = plt.figure('EnergyMagnetizationHistogramAll', figsize=(10, 8))
+plt.suptitle(f'Histogram of magnetization and energies\n(last {lastTimes} MCtimes, for {nStories} stories)', fontsize=14)
+gs = fig.add_gridspec(11, 10)
+
+# Istogramma 2D
+ax_hist2d = fig.add_subplot(gs[1:9, 0:8])
+hist, xedges, yedges, im = ax_hist2d.hist2d(energy[:,-lastTimes:].flatten(), magnetization[:,-lastTimes:].flatten(), bins=(num_bins_energy, num_bins_magnetization),
+                                      range=[[eneMin,eneMax],[magMin,magMax]],cmap='plasma')
+ax_hist2d.set_xlabel('Energy')
+ax_hist2d.set_ylabel('Magnetization')
+
+# Marginali sull'asse Y
+ax_y = fig.add_subplot(gs[1:9, 8:9])
+ax_y.hist(magnetization[:,-lastTimes:].flatten(), bins= 2*num_bins_magnetization, range=[magMin, magMax], orientation='horizontal', color='gray', alpha=0.7)
+ax_y.yaxis.tick_right()
+ax_y.set_ylim(magMin, magMax)
+
+# Marginali sull'asse X
+ax_x = fig.add_subplot(gs[0:1, 0:8])
+ax_x.hist(energy[:,-lastTimes:].flatten(), bins=2*num_bins_energy, range=[eneMin, eneMax], color='gray', alpha=0.7)
+ax_x.xaxis.tick_top()
+ax_x.set_xlim(eneMin, eneMax)
+
+# Colorbar
+cax = fig.add_subplot(gs[10:11, 0:8])
+cbar = plt.colorbar(im, cax=cax, orientation='horizontal')
+cbar.set_label(f'Occurrences (total occurrences = {np.sum(hist)})')
+cax.yaxis.set_ticks_position('right')
+
+# Regolazione degli spazi
+plt.subplots_adjust(wspace=0.8, hspace=0.6)
 
 
 #PLOTS OF AVERAGE (ON STORIES) OF ENERGIES AND MAGNETIZATIONS
@@ -212,24 +240,31 @@ meanMagnetization = np.mean(magnetization[:,-1])
 sigmaMagnetization = np.var(magnetization[:,-1])**0.5
 
 plt.hist(magnetization[:,-1], density=True)
-plt.title("Histogram of")
+plt.title(f"Histogram of last MCtime magnetizations\nover all stories ({nStories})")
 plt.xlabel("Magnetization")
 plt.ylabel("Frequency")
 plt.text(0.05, 0.9, f"Mean value: {meanMagnetization:.5f}", transform=plt.gca().transAxes)
-plt.text(0.05, 0.85, f"\Sigma: {sigmaMagnetization:.5f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.85, f"$\sigma$: {sigmaMagnetization:.5f}", transform=plt.gca().transAxes)
 
 plt.figure('HistogramFinalEnergies')
 meanEnergy = np.mean(energy[:,-1])
 sigmaEnergy = np.var(energy[:,-1])**0.5
 
 plt.hist(energy[:,-1], density=True)
-plt.title("Histogram of")
+plt.title(f"Histogram of last MCtime energies\nover all stories ({nStories})")
 plt.xlabel("Energy")
 plt.ylabel("Frequency")
 plt.text(0.05, 0.9, f"Mean value: {meanEnergy:.5f}", transform=plt.gca().transAxes)
-plt.text(0.05, 0.85, f"\Sigma: {sigmaEnergy:.5f}", transform=plt.gca().transAxes)
+plt.text(0.05, 0.85, f"$\sigma$: {sigmaEnergy:.5f}", transform=plt.gca().transAxes)
 
 
+with open(results_path, "w") as file:
+    # Scrivi i contenuti nel file
+    file.write(f"The average final energy is {meanEnergy: .5f}, with variance {sigmaEnergy: .5f}.\n")
+    file.write(f"The average final magnetization is {meanMagnetization: .5f}, with variance {sigmaMagnetization: .5f}.\n")
+
+if not os.path.exists(Plots_path):
+    os.makedirs(Plots_path)
 
 figs = plt.get_figlabels()  # Ottieni i numeri di tutte le figure create
 for fig_name in figs:
@@ -238,11 +273,4 @@ for fig_name in figs:
     fig.savefig(filename)
 
 
-
-
 #plt.show()
-
-with open(results_path, "w") as file:
-    # Scrivi i contenuti nel file
-    file.write("Questo è un esempio di file di risultati.\n")
-    file.write("Aggiungi qui i tuoi risultati o altre informazioni.\n")
