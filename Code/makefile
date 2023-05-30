@@ -28,7 +28,7 @@ compileSingleAnneal:
 	@echo .
 
 archiveRun:
-	python ..\Utilities\CreateFolder.py
+	python ..\Utilities\MoveRunToArchive.py
 
 send:
 	python ..\Utilities\SendResults.py
