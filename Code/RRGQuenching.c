@@ -18,7 +18,7 @@
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
 
 #ifndef ANNEAL
-#define t_end 1e4 // number of Monte Carlo sweeps
+#define t_end 1e6 // number of Monte Carlo sweeps
 #define simType "Quenching"
 #else
 #define simType "Annealing"
@@ -357,12 +357,12 @@ int main(int argc, char *argv[])
   #ifdef ANNEAL
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = t_meas = \n\n",
+    fprintf(out, "t_end = %d t_meas = %d \n\n",
             t_end, t_meas);
   #else
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = t_meas = \n\n",
+    fprintf(out, "t_end = %d t_meas = %d \n\n",
             t_end, t_meas);
   #endif
   fclose(out);

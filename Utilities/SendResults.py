@@ -20,6 +20,10 @@ body = ""
 with open(os.path.join(FOLDER_PATH, "Info.txt"), 'r') as file:
     body+= file.read()
 
+body+="\n"
+
+with open(os.path.join(FOLDER_PATH, "Results.txt"), 'r') as file:
+    body+= "Results:\n" + file.read()
 
 # Trova l'indice del carattere '#'
 hashPosition = body.find("#")
