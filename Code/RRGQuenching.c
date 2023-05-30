@@ -10,12 +10,6 @@
 #define C 3
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
-#define t_meas 200        // number of MC Sweep between measures
-
-#define FNORM (2.3283064365e-10)
-#define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
-#define FRANDOM (FNORM * RANDOM)
-#define pm1 ((FRANDOM > 0.5) ? 1 : -1)
 
 #ifndef ANNEAL
 #define t_end 1e6 // number of Monte Carlo sweeps
@@ -23,6 +17,14 @@
 #else
 #define simType "Annealing"
 #endif
+
+#define t_start 200 // number of MC Sweeps at the beginning of the simulation to take track of
+#define t_meas 200  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
+
+#define FNORM (2.3283064365e-10)
+#define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
+#define FRANDOM (FNORM * RANDOM)
+#define pm1 ((FRANDOM > 0.5) ? 1 : -1)
 
 #ifdef _WIN32
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
@@ -232,7 +234,7 @@ void oneMCStep(long long int t)
     for (j = 0; j < C; j++) // loop over the interactions of the site
     {
       prod = J[C * i + j];
-      for (k = 0; k < p; k++) // loop over the sites in the
+      for (k = 0; k < p; k++) // loop over the sites in the interaction
         prod *= s[neigh[i][p * j + k]];
       sum += prod;
     }
@@ -252,16 +254,9 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  const char *dataFolderFullPath = realpath("..\\Data\\ThisRun\\", NULL);
+  const char *thisRunDataPath = "..\\Data\\ThisRun\\";
   char path[200] = "";
   char filename[200] = "";
-
-  dataFolderFullPath;
-  if (dataFolderFullPath == NULL)
-  {
-    printf("Error in the search of the Data path.\n");
-    return EXIT_FAILURE;
-  }
 
   // this initializations works on Linux. I (RC) am working on Windows
   /*
@@ -303,7 +298,7 @@ int main(int argc, char *argv[])
   }
   else if (strcmp(argv[2], "inf") == 0)
   {
-    Tp = -1; // TO BE DONE
+    Tp = -1; // so, in the rest of the code, if Tp is negative it means it is to be considered infinite
   }
   else
   {
@@ -344,7 +339,7 @@ int main(int argc, char *argv[])
   {
     strcpy(path, "");
     sprintf(filename, "Info.txt");
-    strcat(path, dataFolderFullPath);
+    strcat(path, thisRunDataPath);
     strcat(path, filename);
     FILE *out = fopen(path, "a");
 
@@ -354,18 +349,18 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
 
-  #ifdef ANNEAL
+#ifdef ANNEAL
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = %d t_meas = %d \n\n",
+    fprintf(out, "t_end = %g t_meas = %d \n\n",
             t_end, t_meas);
-  #else
+#else
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = %d t_meas = %d \n\n",
+    fprintf(out, "t_end = %g t_meas = %d \n\n",
             t_end, t_meas);
-  #endif
-  fclose(out);
+#endif
+    fclose(out);
   }
 #endif
 
@@ -374,10 +369,9 @@ int main(int argc, char *argv[])
     initRRGraph();
     strcpy(path, "");
     sprintf(filename, "McStories\\Story_%d.txt", is);
-    strcat(path, dataFolderFullPath);
+    strcat(path, thisRunDataPath);
     strcat(path, filename);
     FILE *out = fopen(path, "w+");
-
 
     if (out == NULL)
     {
@@ -399,12 +393,21 @@ int main(int argc, char *argv[])
             simType, C, p, N, Tp_string, T, H, is, myrand);
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
-    for (t = 1; t <= t_end; t++)
+    for (t = 1; t < t_start; t++)
     {
       oneMCStep(t);
-      if (!(t % t_meas))
-        fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
+      fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
     }
+
+    for (; t <= t_end;)
+    {
+      for (i = 1; i <= t_meas; i++, t++)
+      {
+        oneMCStep(t);
+      }
+      fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
+    }
+
 #else
 
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  story = %d deltaT= %f n_anneal=%d seed = %u\n#mag ener time\n",
@@ -412,7 +415,19 @@ int main(int argc, char *argv[])
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
     T = T_max;
-    for (t = 1; t <= t_end;)
+
+    for (t = 1; t <= t_start; )
+    {
+      initProb(1. / T, H);
+      for (i = 1; i <= nanneal; i++, t++)
+      {
+        oneMCStep(t);
+        fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
+      }
+      T -= deltaT;
+    }
+
+    for (; t <= t_end;)
     {
       initProb(1. / T, H);
       for (i = 0; i < nanneal; i++, t++)
