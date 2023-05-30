@@ -1,1 +1,5 @@
 This applications works like this
+
+
+TODO:
+optimize the structure of files in folder Code

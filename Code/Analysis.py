@@ -154,7 +154,7 @@ num_bins_magnetization = hist.shape[1]
 non_empty_bins = np.count_nonzero(hist)
 
 while True:
-    if (non_empty_bins > totalOccurrences**0.5 and num_bins_energy>totalOccurrences/50) :
+    if (non_empty_bins > totalOccurrences**0.5 or num_bins_energy>totalOccurrences/50) :
         break
     num_bins_energy*=2
     num_bins_magnetization*=2
