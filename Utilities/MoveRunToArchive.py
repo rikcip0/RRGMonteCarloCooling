@@ -68,12 +68,12 @@ def get_title_line(Info_path):
     return None
 
 
-file_path = "..\\Data\\ThisRun\\Info.txt"
+file_path = "..\\Data\\Epic\\ThisRun\\Info.txt"
 symTypeString, inputParamsString= get_title_line(file_path)
 formatFolder_name = os.path.join(symTypeString, inputParamsString)
 
-archive_folder = "..\\Data\\Archive"
+archive_folder = "..\\Data\\Epic\\Archive"
 destination_folder = check_subfolder_existence(archive_folder, formatFolder_name)
 
-source_folder = "..\\Data\\ThisRun"
+source_folder = "..\\Data\\Epic\\ThisRun"
 move_folder_content(source_folder, destination_folder)

@@ -34,7 +34,7 @@ if typeOfInfo=="Simulation":
 
 
 # Scrivi il contenuto nel file
-with open("..\Data\ThisRun\Info.txt", "w" if typeOfInfo=="Simulation" else "a") as file:
+with open("..\Data\Epic\ThisRun\Info.txt", "w" if typeOfInfo=="Simulation" else "a") as file:
     file.write(content)
 
 

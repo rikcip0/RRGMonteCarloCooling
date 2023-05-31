@@ -10,6 +10,8 @@ set h=%6
 set deltaT=%7
 set nanneal=%8
 
+
+cd MCEpic
 if "%simType%"=="quench" (
     set program=singleQuench.exe
     make compileSingleQuench
@@ -23,7 +25,7 @@ if "%simType%"=="quench" (
 
 echo Simulations will be launched using the executable %program%.
 
-set "McStoriesPath=..\Data\ThisRun\McStories"
+set "McStoriesPath=..\Data\Epic\ThisRun\McStories"
 
 if not exist "%McStoriesPath%" (
     echo Monte Carlo stories folder does not exist. I am creating it...
@@ -35,13 +37,13 @@ if not exist "%McStoriesPath%" (
     )
 )
 
-WriteInfo.py Simulation %nSample%
+..\Analysis\WriteInfo.py Simulation %nSample%
 
 echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 call Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 
-WriteInfo.py Analysis %nSample%
-Analysis.py
+..\Analysis\WriteInfo.py Analysis %nSample%
+..\Analysis\AnalysisAndPlots.py
 ..\Utilities\SendResults.py
 
 :end

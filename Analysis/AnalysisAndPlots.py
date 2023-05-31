@@ -8,15 +8,15 @@ import re
 from MyBasePlots.Hist2dWithMarginals import Hist2dWithMarginals
 
 # Define the path of the TXT files to ana lyze
-Stories_path = "../Data/ThisRun/McStories/*.txt"
+Stories_path = "../Data/Epic/ThisRun/McStories/*.txt"
 # Define the path of thetext file with infos on the input
-InputInfo_path = "../Data/ThisRun/Info.txt"
+InputInfo_path = "../Data/Epic/ThisRun/Info.txt"
 
 # Define the path of destination for the plots
-Plots_path = "../Data/ThisRun/Plots"
+Plots_path = "../Data/Epic/ThisRun/Plots"
 
 # Define the path of the destination for the results
-results_path = "../Data/ThisRun/Results.txt"
+results_path = "../Data/Epic/ThisRun/Results.txt"
 
 # Get the stories names in the folder
 file_names = glob.glob(Stories_path)
@@ -142,82 +142,7 @@ for i in range(0,3, 1):
 
 
 #SECOND TYPE OF PLOTS: 2D HISTOGRAMS (within the same frame) of single stories (ener,mag) and of all stories (en,mag)
-'''
-lastTimes = 200
-totalOccurrences = lastTimes*nStories
-magMin, magMax = np.min(magnetization[:,-lastTimes:]), np.max(magnetization[:,-lastTimes:])
-eneMin, eneMax = np.min(energy[:,-lastTimes:]), np.max(energy[:,-lastTimes:])
-
-hist, xedges, yedges = np.histogram2d(energy[:,-lastTimes:].flatten(), magnetization[:,-lastTimes:].flatten(), range=[[eneMin,eneMax],[magMin,magMax]])
-'''
-# Ottieni le dimensioni dell'istogramma
-'''
-num_bins_energy = hist.shape[0]
-num_bins_magnetization = hist.shape[1]
-non_empty_bins = np.count_nonzero(hist)
-
-while True:
-    if (non_empty_bins > totalOccurrences**0.5 or num_bins_energy>totalOccurrences/50) :
-        break
-    num_bins_energy*=2
-    num_bins_magnetization*=2
-    hist, xedges, yedges = np.histogram2d(energy[:,-lastTimes:].flatten(), magnetization[:,-lastTimes:].flatten(), range=[[eneMin,eneMax],[magMin,magMax]], bins=(num_bins_energy, num_bins_magnetization))
-    non_empty_bins = np.count_nonzero(hist)
-
-
-for i in range(0,3, 1):
-        plt.figure('EnergyMagnetizationHistogramStory'+str(i))
-        plt.title(f'Histogram of magnetizations and energies\n(last {lastTimes} MCtimes, for story #{i}')
-        plt.xlabel('Energy')
-        plt.ylabel('Magnetization')  
-        hist, xedges, yedges = np.histogram2d(energy[i,-lastTimes:].flatten(), magnetization[i,-lastTimes:].flatten(),
-                                                   bins=(num_bins_energy, num_bins_magnetization),
-                                      range=[[eneMin,eneMax],[magMin,magMax]])
-        normalized_hist = hist / np.sum(hist)
-        plt.imshow(normalized_hist.T, extent=[magMin, magMax, eneMin, eneMax], origin='lower', aspect='auto', cmap='plasma')
-        plt.colorbar()
-
-'''
-
-'''
-plt.rcParams.update(plt.rcParamsDefault)
-fig = plt.figure('EnergyMagnetizationHistogramAll', figsize=(10, 8))
-plt.suptitle(f'Histogram of magnetization and energies\n(last {lastTimes} MCtimes, for {nStories} stories)', fontsize=14)
-gs = fig.add_gridspec(11, 10)
-
-
-ax_hist2d = fig.add_subplot(gs[1:9, 0:8])
-hist, xedges, yedges, im = ax_hist2d.hist2d(energy[:,-lastTimes:].flatten(), magnetization[:,-lastTimes:].flatten(), bins=(num_bins_energy, num_bins_magnetization),
-                                      range=[[eneMin,eneMax],[magMin,magMax]],cmap='plasma')
-ax_hist2d.set_xlabel('Energy')
-ax_hist2d.set_ylabel('Magnetization')
-'''
-# Marginali sull'asse Y
-'''
-ax_y = fig.add_subplot(gs[1:9, 8:9])
-ax_y.hist(magnetization[:,-lastTimes:].flatten(), bins= 2*num_bins_magnetization, range=[magMin, magMax], orientation='horizontal', color='gray', alpha=0.7)
-ax_y.yaxis.tick_right()
-ax_y.set_ylim(magMin, magMax)
-'''
-# Marginali sull'asse X
-'''
-ax_x = fig.add_subplot(gs[0:1, 0:8])
-ax_x.hist(energy[:,-lastTimes:].flatten(), bins=2*num_bins_energy, range=[eneMin, eneMax], color='gray', alpha=0.7)
-ax_x.xaxis.tick_top()
-ax_x.set_xlim(eneMin, eneMax)
-'''
-# Colorbar
-'''
-cax = fig.add_subplot(gs[10:11, 0:8])
-cbar = plt.colorbar(im, cax=cax, orientation='horizontal')
-cbar.set_label(f'Occurrences (total occurrences = {np.sum(hist)})')
-cax.yaxis.set_ticks_position('right')
-'''
-# Regolazione degli spazi
-'''
-plt.subplots_adjust(wspace=0.8, hspace=0.6)
-'''
-Hist2dWithMarginals(energy, magnetization, 'energy', 'magnetization', 200, 10, nStories)
+Hist2dWithMarginals(energy, magnetization, 'energy', 'magnetization', 100, 200, time[0])
 
 #PLOTS OF AVERAGE (ON STORIES) OF ENERGIES AND MAGNETIZATIONS
 

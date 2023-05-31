@@ -1,4 +1,4 @@
-/* by FRT */
+/* by RikCip*/
 // C-XORSAT on C-RRG
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,8 +18,8 @@
 #define simType "Annealing"
 #endif
 
-#define t_start 200 // number of MC Sweeps at the beginning of the simulation to take track of
-#define t_meas 200  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
+#define t_start 0 // number of MC Sweeps at the beginning of the simulation to take track of
+#define t_meas 20  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
   long long unsigned int t;
   double Tp, T, H;
   char Tp_string[7];
-  const char *thisRunDataPath = "..\\Data\\ThisRun\\";
+  const char *thisRunDataPath = "..\\Data\\Epic\\ThisRun\\";
   char path[200] = "";
   char filename[200] = "";
 
