@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 
-from MyBasePlots import Hist2dWithMarginals
+from MyBasePlots.Hist2dWithMarginals import Hist2dWithMarginals
 
 # Define the path of the TXT files to ana lyze
 Stories_path = "../Data/ThisRun/McStories/*.txt"
