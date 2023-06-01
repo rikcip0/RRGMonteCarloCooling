@@ -43,7 +43,7 @@ echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 call Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 
 ..\Analysis\WriteInfo.py Analysis %nSample%
-..\Analysis\AnalysisAndPlots.py
+..\Analysis\EpicAnalysis.py
 ..\Utilities\SendResults.py
 
 :end

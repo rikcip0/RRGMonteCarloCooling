@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h> //added by me (RC) to initialize the generator
 
-#define C 3
+#define C 8
 #define p 3               // to be implemented, for the moment it is not used and assumed p=C
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
 
@@ -19,7 +19,7 @@
 #endif
 
 #define t_start 0 // number of MC Sweeps at the beginning of the simulation to take track of
-#define t_meas 20  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
+#define t_meas 200  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
 
 #define FNORM (2.3283064365e-10)
 #define RANDOM ((_ira[_ip++] = _ira[_ip1++] + _ira[_ip2++]) ^ _ira[_ip3++])
@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
             simType, C, p, N, Tp_string, T, H, is, myrand);
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
-    for (t = 1; t < t_start; t++)
+    for (t = 0; t < t_start; t++)
     {
       oneMCStep(t);
       fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
@@ -416,7 +416,7 @@ int main(int argc, char *argv[])
 
     T = T_max;
 
-    for (t = 1; t <= t_start; )
+    for (t = 0; t < t_start; )
     {
       initProb(1. / T, H);
       for (i = 1; i <= nanneal; i++, t++)

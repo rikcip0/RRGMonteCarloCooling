@@ -81,6 +81,10 @@ with open(InputInfo_path, "r") as file:
     actual_stories_line_exists = next((line for line in content.split("\n") if line.startswith("actualStories")), None)
 
 
+parametersInfo = "_".join([str(parameter) + str(value) for parameter, value in parameters.items()])
+
+
+
 magnetization =[]
 energy = []
 time = []
@@ -142,7 +146,7 @@ for i in range(0,3, 1):
 
 
 #SECOND TYPE OF PLOTS: 2D HISTOGRAMS (within the same frame) of single stories (ener,mag) and of all stories (en,mag)
-Hist2dWithMarginals(energy, magnetization, 'energy', 'magnetization', 100, 200, time[0])
+Hist2dWithMarginals(energy, magnetization, 'energy', 'magnetization', -200, -1, time[0], parametersInfo)
 
 #PLOTS OF AVERAGE (ON STORIES) OF ENERGIES AND MAGNETIZATIONS
 
@@ -203,4 +207,4 @@ for fig_name in figs:
     fig.savefig(filename)
 
 
-plt.show()
+#plt.show()
