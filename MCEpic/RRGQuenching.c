@@ -7,8 +7,8 @@
 #include <string.h>
 #include <time.h> //added by me (RC) to initialize the generator
 
-#define C 8
-#define p 3               // to be implemented, for the moment it is not used and assumed p=C
+#define C 5
+#define p 3              
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
 
 #ifndef ANNEAL
@@ -18,7 +18,7 @@
 #define simType "Annealing"
 #endif
 
-#define t_start 0 // number of MC Sweeps at the beginning of the simulation to take track of
+#define t_start 100 // number of MC Sweeps at the beginning of the simulation to take track of
 #define t_meas 200  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
 
 #define FNORM (2.3283064365e-10)
@@ -202,6 +202,7 @@ void initProb(double beta, double field)
   }
 }
 
+
 int ener(void)
 {
   int i, j, prod, res = 0;
@@ -287,7 +288,7 @@ int main(int argc, char *argv[])
   double T_max = T;
   double deltaT = atof(argv[6]);
   int nanneal = atoi(argv[7]);
-  int t_end = nanneal * (int)((T / deltaT) + 1.4);
+  int t_end = nanneal * (int)((T / deltaT) + 1.1);
 #endif
 
   N = atoi(argv[1]);
@@ -316,8 +317,6 @@ int main(int argc, char *argv[])
     error("in h");
 
   n_int = N * C / p;
-  printf("#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
-         simType, C, p, N, Tp_string, T, H, myrand);
 
   if (Tp > 0.0)
     numPosJ = n_int * 0.5 * (1. + tanh(1. / Tp));
@@ -331,7 +330,13 @@ int main(int argc, char *argv[])
   initRandom();
   allocateAll();
   initProb(1. / T, H);
-
+#ifdef ANNEAL
+    printf("#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f deltaT = %f n_anneal = %i seed = %u\n",
+            simType, C, p, N, Tp_string, T, H, deltaT, nanneal, myrand);
+#else
+    printf("#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
+         simType, C, p, N, Tp_string, T, H, myrand);
+#endif
 #ifdef SINGLESTORY // if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
   is = nSamples;   // otherwise, it loops to generate nSamples story
 
@@ -350,15 +355,19 @@ int main(int argc, char *argv[])
     }
 
 #ifdef ANNEAL
-    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
-            simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = %g t_meas = %d \n\n",
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f deltaT = %f n_anneal = %d\n",
+            simType, C, p, N, Tp_string, T, H, deltaT, nanneal);
+    fprintf(out, "t_end = %g t_meas = %d \n",
             t_end, t_meas);
+    fprintf(out, "n_int = %d c_eff = %f \n\n",
+            n_int, (double)n_int*p/N);
 #else
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = %g t_meas = %d \n\n",
+    fprintf(out, "t_end = %u t_meas = %d \n",
             t_end, t_meas);
+    fprintf(out, "n_int = %d c_eff = %f \n\n",
+            n_int, (double)n_int*p/N);
 #endif
     fclose(out);
   }
@@ -391,15 +400,16 @@ int main(int argc, char *argv[])
 
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  story = %d seed = %u\n#mag ener time\n",
             simType, C, p, N, Tp_string, T, H, is, myrand);
+    t = 0;
     fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
-    for (t = 0; t < t_start; t++)
+    for (; t < t_start; t++)
     {
       oneMCStep(t);
       fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
     }
 
-    for (; t <= t_end;)
+    for (; t < t_end;)
     {
       for (i = 1; i <= t_meas; i++, t++)
       {
@@ -412,32 +422,33 @@ int main(int argc, char *argv[])
 
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  story = %d deltaT= %f n_anneal=%d seed = %u\n#mag ener time\n",
             simType, C, p, N, Tp_string, T, H, is, deltaT, nanneal, myrand);
-    fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
     T = T_max;
+    initProb(1. / T, H);
+    t=0;
+    
+    fprintf(out, "%i %i 0\n", mag, ener() - ener0);
 
-    for (t = 0; t < t_start; )
+    for (; t < t_start; )
     {
-      initProb(1. / T, H);
-      for (i = 1; i <= nanneal; i++, t++)
-      {
-        oneMCStep(t);
-        fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
-      }
+      oneMCStep(t);
+      t++;
+      fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
+      if (!(t % nanneal)){
       T -= deltaT;
+      initProb(1. / T, H);}
     }
 
-    for (; t <= t_end;)
+    for (; t < t_end;)  //the stop condition could be T>=0 and avoid computing t_end
     {
-      initProb(1. / T, H);
-      for (i = 0; i < nanneal; i++, t++)
-      {
-        oneMCStep(t);
-        if (!(t % t_meas))
+      oneMCStep(t);
+      t++;
+      if (!(t % t_meas))
           fprintf(out, "%i %i %lli\n", mag, ener() - ener0, t);
-      }
+      if (!(t % nanneal)){
       T -= deltaT;
-    }
+      initProb(1. / T, H);}    
+      }
 #endif
 
     fclose(out);

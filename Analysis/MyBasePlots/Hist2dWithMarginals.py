@@ -8,7 +8,7 @@ def Hist2dWithMarginals(x_array, y_array, xName, yName, startMeasure, endMeasure
     nStories = x_array.shape[0]
     xArraySlice = slice_array(x_array,startMeasure,endMeasure)
     yArraySlice = slice_array(y_array,startMeasure,endMeasure)
-
+    
     totalOccurrences = (np.abs(startMeasure-endMeasure)+1)*nStories
     yMin, yMax = np.min(yArraySlice), np.max(yArraySlice)
     xMin, xMax = np.min(xArraySlice), np.max(xArraySlice)
@@ -21,10 +21,10 @@ def Hist2dWithMarginals(x_array, y_array, xName, yName, startMeasure, endMeasure
     non_empty_bins = np.count_nonzero(hist)
 
     while True:
-        if (non_empty_bins > 4*totalOccurrences**0.5 or num_bins_x>2*totalOccurrences/50) :
+        if (num_bins_x> 1.1*totalOccurrences**0.5 or non_empty_bins/(num_bins_x*num_bins_y)< (1/nStories)**1.25 ) :
             break
-        num_bins_x*=2
-        num_bins_y*=2
+        num_bins_x=(int)(num_bins_x*1.17)
+        num_bins_y=(int)(num_bins_y*1.17)
         hist, xedges, yedges = np.histogram2d(xArraySlice.flatten(), yArraySlice.flatten(), range=[[xMin,xMax],[yMin,yMax]], bins=(num_bins_x, num_bins_y))
         non_empty_bins = np.count_nonzero(hist)
 
@@ -68,7 +68,7 @@ def Hist2dWithMarginals(x_array, y_array, xName, yName, startMeasure, endMeasure
     ax_hist2d.set_ylabel(f'{yName}')
 
     # Marginali sull'asse X
-    ax_x.hist(xArraySlice.flatten(), bins=2*num_bins_x, range=[xMin, xMax], color='gray', alpha=0.7)
+    ax_x.hist(xArraySlice.flatten(), bins=num_bins_x, range=[xMin, xMax], color='gray', alpha=0.7)
     ax_x.xaxis.tick_top()
     ax_x.set_xlim(xMin, xMax)
     ax_x.axvline(mean_x, color='black', linestyle='solid', linewidth=2)
@@ -77,7 +77,7 @@ def Hist2dWithMarginals(x_array, y_array, xName, yName, startMeasure, endMeasure
     ax_x.axvline(mean_x-sigma_x, color='red', linestyle='dashed', linewidth=1)
 
     # Marginali sull'asse Y
-    ax_y.hist(yArraySlice.flatten(), bins= 2*num_bins_y, range=[yMin, yMax], orientation='horizontal', color='gray', alpha=0.7)
+    ax_y.hist(yArraySlice.flatten(), bins= num_bins_y, range=[yMin, yMax], orientation='horizontal', color='gray', alpha=0.7)
     ax_y.yaxis.tick_right()
     ax_y.set_ylim(yMin, yMax)
     ax_y.axhline(mean_y, color='black', linestyle='solid', linewidth=2)
@@ -102,7 +102,7 @@ def Hist2dWithMarginals(x_array, y_array, xName, yName, startMeasure, endMeasure
          title += f'(last {np.abs(startMeasure)} measures'
     else:
          title += f'(measures from {startMeasure} to {endMeasure}'
-    title+=f', times from {timeArray[startMeasure]-1} to {timeArray[endMeasure]-1}, over {nStories} stories)'
+    title+=f', times from {timeArray[startMeasure]} to {timeArray[endMeasure]}, over {nStories} stories)'
 
     plt.suptitle(title, fontsize=11)
 

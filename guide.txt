@@ -3,3 +3,9 @@ This applications works like this
 
 TODO:
 optimize the structure of files in folder Code
+
+add mean and sigma to hist 2D
+
+Add conserva folder
+
+Redo the plots
