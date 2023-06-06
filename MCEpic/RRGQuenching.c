@@ -1,5 +1,4 @@
-/* by RikCip*/
-// C-XORSAT on C-RRG
+// p-spin on C-RRG
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -7,7 +6,7 @@
 #include <string.h>
 #include <time.h> //added by me (RC) to initialize the generator
 
-#define C 5
+#define C 8
 #define p 3              
 #define nDisorderCopies 1 // number of instances for each disorder configuration TO BE IMPLEMENTED
 
@@ -18,7 +17,7 @@
 #define simType "Annealing"
 #endif
 
-#define t_start 100 // number of MC Sweeps at the beginning of the simulation to take track of
+#define t_start 200 // number of MC Sweeps at the beginning of the simulation to take track of
 #define t_meas 200  // number of MC Sweep between measures after t     t_end-t_start better be a multiple of t_meas
 
 #define FNORM (2.3283064365e-10)
@@ -26,9 +25,6 @@
 #define FRANDOM (FNORM * RANDOM)
 #define pm1 ((FRANDOM > 0.5) ? 1 : -1)
 
-#ifdef _WIN32
-#define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
-#endif
 
 /* global vars for random generator */
 unsigned int myrand, _ira[256];
@@ -267,6 +263,7 @@ int main(int argc, char *argv[])
   fclose(devran);
     */
 
+
   myrand = time(NULL); // my (RC) initialization, for Windows
 
 #ifndef ANNEAL
@@ -327,9 +324,6 @@ int main(int argc, char *argv[])
     numPosJ = n_int / 2;
   }
 
-  initRandom();
-  allocateAll();
-  initProb(1. / T, H);
 #ifdef ANNEAL
     printf("#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f deltaT = %f n_anneal = %i seed = %u\n",
             simType, C, p, N, Tp_string, T, H, deltaT, nanneal, myrand);
@@ -337,6 +331,11 @@ int main(int argc, char *argv[])
     printf("#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f  seed = %u\n",
          simType, C, p, N, Tp_string, T, H, myrand);
 #endif
+
+  initRandom();
+  allocateAll();
+  initProb(1. / T, H);
+
 #ifdef SINGLESTORY // if the program is compiled with the SINGLESTORY directive, it only generates one story (with # equal argument)
   is = nSamples;   // otherwise, it loops to generate nSamples story
 
@@ -355,16 +354,16 @@ int main(int argc, char *argv[])
     }
 
 #ifdef ANNEAL
-    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f deltaT = %f n_anneal = %d\n",
+    fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f deltaT = %f n_anneal = %i\n",
             simType, C, p, N, Tp_string, T, H, deltaT, nanneal);
-    fprintf(out, "t_end = %g t_meas = %d \n",
+    fprintf(out, "t_end = %i t_meas = %d \n",
             t_end, t_meas);
     fprintf(out, "n_int = %d c_eff = %f \n\n",
             n_int, (double)n_int*p/N);
 #else
     fprintf(out, "#%s  C = %i p = %i  N = %i  Tp = %s  T = %f  H = %f\n",
             simType, C, p, N, Tp_string, T, H);
-    fprintf(out, "t_end = %u t_meas = %d \n",
+    fprintf(out, "t_end = %g t_meas = %d \n",
             t_end, t_meas);
     fprintf(out, "n_int = %d c_eff = %f \n\n",
             n_int, (double)n_int*p/N);
