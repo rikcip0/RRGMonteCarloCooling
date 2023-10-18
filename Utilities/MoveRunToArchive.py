@@ -57,23 +57,24 @@ def get_title_line(Info_path):
 
         # Find the line starting with "#"
         params_line = next((line for line in content.split("\n") if line.startswith("#")), None)
-
+        actualEpics_line = next((line for line in content.split("\n") if line.startswith("actualEpics")), None)
+        actualEpics = re.findall(r"\b(\w+)\s*=\s*([^\s#]+)", actualEpics_line)
         if params_line is not None:
             # Extract the symType
             symType = re.search(r"#(\w+)", params_line).group(1)
 
             # Search for parameters and values using regular expressions
             params = re.findall(r"\b(\w+)\s*=\s*([^\s#]+)", params_line)
-            return symType, ''.join([f"{key}{value}" for key, value in params])
+            return symType, actualEpics[0][1],''.join([f"{key}{value}" for key, value in params])
     return None
 
 
-file_path = "..\\Data\\Epic\\ThisRun\\Info.txt"
-symTypeString, inputParamsString= get_title_line(file_path)
-formatFolder_name = os.path.join(symTypeString, inputParamsString)
+file_path = "..\\Data\\Epics\\ThisRun\\Info.txt"
+symTypeString, nEpics, inputParamsString= get_title_line(file_path)
+formatFolder_name = os.path.join(symTypeString, inputParamsString+f"nEpics{nEpics}")
 
-archive_folder = "..\\Data\\Epic\\Archive"
+archive_folder = "..\\Data\\Epics\\Archive"
 destination_folder = check_subfolder_existence(archive_folder, formatFolder_name)
 
-source_folder = "..\\Data\\Epic\\ThisRun"
+source_folder = "..\\Data\\Epics\\ThisRun"
 move_folder_content(source_folder, destination_folder)

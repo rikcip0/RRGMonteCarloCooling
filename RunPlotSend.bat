@@ -25,7 +25,7 @@ if "%simType%"=="quench" (
 
 echo Simulations will be launched using the executable %program%.
 
-set "McStoriesPath=..\Data\Epic\ThisRun\McStories"
+set "McStoriesPath=..\Data\Epics\ThisRun\McStories"
 
 if not exist "%McStoriesPath%" (
     echo Monte Carlo stories folder does not exist. I am creating it...
@@ -37,14 +37,14 @@ if not exist "%McStoriesPath%" (
     )
 )
 
-..\Analysis\WriteInfo.py Simulation %nSample%
+python ..\Utilities\WriteInfo.py Simulation %nSample% %simType% %N% %Tp% %T% %h% %nStories%
 
 echo %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 call Launcher %program% %N% %Tp% %T% %nSample% %h% %deltaT% %nanneal%
 
-..\Analysis\WriteInfo.py Analysis %nSample%
-..\Analysis\EpicAnalysis.py
-..\Utilities\SendResults.py
+python ..\Utilities\WriteInfo.py Analysis %nSample%
+python ..\Analysis\EpicAnalysis.py
+::..\Utilities\SendResults.py
 
 :end
 

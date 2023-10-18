@@ -21,9 +21,7 @@ if %counter% equ %nSamples% (
     goto check_completion
 )
 
-tasklist /FI "IMAGENAME eq %program%" 2>NUL | find /c /i "%program%" > temp.txt
-set /p "active_processes=" < temp.txt
-del temp.txt
+for /f %%A in ('tasklist /FI "IMAGENAME eq %program%" ^| find /c /i "%program%"') do set "active_processes=%%A"
 
 if %active_processes% lss %max_processes% (
     if "%program%"=="singleQuench.exe" (
@@ -42,9 +40,7 @@ ping -n %delay% 127.0.0.1 >NUL
 goto loop
 
 :check_completion
-tasklist /FI "IMAGENAME eq %program%" 2>NUL | find /c /i "%program%" > temp.txt
-set /p "active_processes=" < temp.txt
-del temp.txt
+for /f %%A in ('tasklist /FI "IMAGENAME eq %program%" ^| find /c /i "%program%"') do set "active_processes=%%A"
 
 if %active_processes% equ 0 (
     goto end

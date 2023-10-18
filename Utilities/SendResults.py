@@ -1,14 +1,32 @@
 import os
 import smtplib
+import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE
 from email import encoders
 
+sendTypesDict = {"allExits": "all found exits processes!", "lastRun" : "ThisRun"}
+if len(sys.argv) > 1:
+    sendType = sys.argv[1]
+    if sendType in sendTypesDict:
+        packagingType = sendTypesDict[sendType]
+        FOLDER_PATH = '..\\Data\\CrossEGroups'
+    else:
+        print(f"Sending of type {sendType} not implemented.\n")
+        print("Implemented sending types include:")
+        for implementedSending in sendTypesDict:
+            print(implementedSending)
+        print("\n")
+        exit()
+else:
+    sendType = "lastRun"
+    packagingType = sendTypesDict[sendType]
+    FOLDER_PATH = '..\\Data\\Epics\\ThisRun'
+    print("Sending last run.")
+    print("\nAnalysis completed.\n")
 
-# Aggiunta dell'allegato
-FOLDER_PATH = os.path.abspath('..\\Data\\Epic\\ThisRun')
 
 # Parametri per l'invio dell'email
 sender = 'riccardo.sender@gmail.com'
@@ -17,28 +35,27 @@ password = 'jdbhfoxtsogsptql'
 object = 'Results for '
 body = ""
 
-with open(os.path.join(FOLDER_PATH, "Info.txt"), 'r') as file:
-    body+= file.read()
+if sendType == "lastRun":
+    with open(os.path.join(FOLDER_PATH, "Info.txt"), 'r') as file:
+        body+= file.read()
 
-body+="\n"
+    body+="\n"
 
-with open(os.path.join(FOLDER_PATH, "Results.txt"), 'r') as file:
-    body+= "Results:\n" + file.read()
 
-# Trova l'indice del carattere '#'
-hashPosition = body.find("#")
+    # Trova l'indice del carattere '#'
+    hashPosition = body.find("#")
 
-# Verifica se il carattere '#' è presente nel file
-if hashPosition!= -1:
-    # Trova l'indice del primo spazio dopo il carattere '#'
-    nextSpacePosition = body.find(" ", hashPosition)
+    # Verifica se il carattere '#' è presente nel file
+    if hashPosition!= -1:
+        # Trova l'indice del primo spazio dopo il carattere '#'
+        nextSpacePosition = body.find(" ", hashPosition)
 
-    # Estrai la parola successiva al carattere '#'
-    symType = body[hashPosition + 1:nextSpacePosition]
-else:
-    print("No simulation type specified by '#' has been found.")
+        # Estrai la parola successiva al carattere '#'
+        symType = body[hashPosition + 1:nextSpacePosition]
+    else:
+        print("No simulation type specified by '#' has been found.")
 
-object += (symType + "!")
+    object += (symType + "!")
 
 # Creazione del messaggio email
 msg = MIMEMultipart()

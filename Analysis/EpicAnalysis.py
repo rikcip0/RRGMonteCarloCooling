@@ -8,15 +8,15 @@ import re
 from MyBasePlots.Hist2dWithMarginals import Hist2dWithMarginals
 
 # Define the path of the TXT files to ana lyze
-Stories_path = "../Data/Epic/ThisRun/McStories/*.txt"
+Stories_path = "../Data/Epics/ThisRun/McStories/*.txt"
 # Define the path of thetext file with infos on the input
-InputInfo_path = "../Data/Epic/ThisRun/Info.txt"
+InputInfo_path = "../Data/Epics/ThisRun/Info.txt"
 
 # Define the path of destination for the plots
-Plots_path = "../Data/Epic/ThisRun/Plots"
+Plots_path = "../Data/Epics/ThisRun/Plots"
 
 # Define the path of the destination for the results
-results_path = "../Data/Epic/ThisRun/Results.txt"
+results_path = "../Data/Epics/ThisRun/Results.txt"
 
 # Get the stories names in the folder
 file_names = glob.glob(Stories_path)
@@ -50,7 +50,7 @@ with open(InputInfo_path, "r") as file:
             value = result[1]
             if "." in value:
                 # If the value contains a decimal point, convert to float
-                value = float(value)
+                value = float(re.sub('[^0-9]','', value))
             else:
                 try:
                     # Try converting the value to float
@@ -110,8 +110,8 @@ for nome_file in sorted(file_names):
 
 # Access the data using the predefined arrays
 time = np.array(time)
-magnetization= np.array(magnetization)
-energy = np.array(energy)
+magnetization= np.array(magnetization)/100000
+energy = np.array(energy)/100000
 
 nStories = time.shape[0]
 print("nStories =", nStories)
@@ -133,20 +133,20 @@ for i in range(0,3, 1):
     plt.xlabel('MC time')  
     plt.ylabel('Magnetization') 
     plt.grid(True)
-    plt.plot(time[i,20:], magnetization[i,20:])
+    plt.plot(time[i,:], magnetization[i,:])
 
     plt.figure('EnergyStory'+str(i))
     plt.title('Energy evolution for story #'+str(i))
     plt.xlabel('MC time')  
     plt.ylabel('Energy')
     plt.grid(True) 
-    plt.plot(time[i,20:], energy[i,20:])
+    plt.plot(time[i,:], energy[i,:])
 
 
 
 
 #SECOND TYPE OF PLOTS: 2D HISTOGRAMS (within the same frame) of single stories (ener,mag) and of all stories (en,mag)
-Hist2dWithMarginals(energy, magnetization, 'energy', 'magnetization', -200, -1, time[0], parametersInfo)
+Hist2dWithMarginals(energy, magnetization, 'energy', 'magnetization', -0, -1, time[0], parametersInfo)
 
 #PLOTS OF AVERAGE (ON STORIES) OF ENERGIES AND MAGNETIZATIONS
 
@@ -155,7 +155,7 @@ plt.title('Magnetization averaged on all stories')
 plt.xlabel('MC time')  
 plt.ylabel('Average magnetization')
 plt.grid(True)
-plt.scatter(time[1,10:], magnetization[:,10:].mean(0))
+plt.scatter(time[1,:], magnetization[:,:].mean(0))
 
 
 plt.figure('AverageEnergy')
@@ -163,7 +163,7 @@ plt.title('Energy averaged on all stories')
 plt.xlabel('MC time')  
 plt.ylabel('Average energy')
 plt.grid(True)
-plt.scatter(time[1,10:], energy[:,10:].mean(0))
+plt.scatter(time[1,:], energy[:,:].mean(0))
 
 
 
